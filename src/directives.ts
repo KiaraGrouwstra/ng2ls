@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import { Directive, Renderer, ElementRef, ViewContainerRef, EmbeddedViewRef, ViewRef, TemplateRef, DoCheck, KeyValueDiffer, KeyValueDiffers, KeyValueChangeRecord, ChangeDetectorRef, ViewContainer } from '@angular/core';
+import { Directive, Renderer, ElementRef, ViewContainerRef, EmbeddedViewRef, ViewRef, TemplateRef, DoCheck, KeyValueDiffer, KeyValueDiffers, KeyValueChangeRecord, ChangeDetectorRef, DebugNode } from '@angular/core';
+import { ViewContainer } from '@angular/core/src/linker/view_container';
 import { DomElementSchemaRegistry } from '@angular/compiler/src/schema/dom_element_schema_registry';
 import { Component } from '@angular/core';
 import { isPresent, isBlank } from '@angular/core/src/facade/lang';
@@ -9,30 +10,30 @@ import { NgForRow } from '@angular/common/src/directives/ng_for';
 import { Obj, Type } from './types';
 export { ObjDirective };
 
-// [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
-// [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
-// [properties / IDL attributes](https://www.w3.org/TR/DOM-Level-2-HTML/idl-definitions.html)
-// PropertyBindingType: Property, Attribute, Class, Style -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_ast.ts
-// [prefix definitions](https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_parser.ts)
-// each calls a respective `setElement*` -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/view_compiler/property_binder.ts
-const setMethod = {
-  property: 'setElementProperty',
-  attribute: 'setElementAttribute',
-  class: 'setElementClass',
-  style: 'setElementStyle',
-  // directive: 'setElementDirective',  // <-- nope, doesn't exist :(
-  // ^ compiled components instantiate directives (names numbered!), then in
-  // `detectChangesInternal` feeds the expression results into their inputs,
-  // and finally saves the result to detect changes on the next check.
-};
-// https://github.com/angular/angular/blob/master/modules/%40angular/platform-browser/src/web_workers/worker/_renderer.ts
-// setText, invokeElementMethod, listen, listenGlobal
-// this._el.style.backgroundColor = color;
+// // [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
+// // [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
+// // [properties / IDL attributes](https://www.w3.org/TR/DOM-Level-2-HTML/idl-definitions.html)
+// // PropertyBindingType: Property, Attribute, Class, Style -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_ast.ts
+// // [prefix definitions](https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_parser.ts)
+// // each calls a respective `setElement*` -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/view_compiler/property_binder.ts
+// const setMethod = {
+//   property: 'setElementProperty',
+//   attribute: 'setElementAttribute',
+//   class: 'setElementClass',
+//   style: 'setElementStyle',
+//   // directive: 'setElementDirective',  // <-- nope, doesn't exist :(
+//   // ^ compiled components instantiate directives (names numbered!), then in
+//   // `detectChangesInternal` feeds the expression results into their inputs,
+//   // and finally saves the result to detect changes on the next check.
+// };
+// // https://github.com/angular/angular/blob/master/modules/%40angular/platform-browser/src/web_workers/worker/_renderer.ts
+// // setText, invokeElementMethod, listen, listenGlobal
+// // this._el.style.backgroundColor = color;
 
-// return a string key of the method to set the given key for the element in question
-function keyMethod(registry: DomElementSchemaRegistry, elName: string, k: string): string {
-  return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
-}
+// // return a string key of the method to set the given key for the element in question
+// function keyMethod(registry: DomElementSchemaRegistry, elName: string, k: string): string {
+//   return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
+// }
 
 abstract class ObjDirective implements DoCheck {
   _el: HTMLElement;
@@ -123,8 +124,8 @@ export class SetAttrs extends ObjDirective {
   }
 
   private _setItem(name: string, val: string): void {
-    let method = keyMethod(this._registry, this._elName, name);
-    (<(renderElement: any, attributeName: string, value: string) => void>(this._renderer[method]))(this._el, name, val);
+    let isProp = this._registry.hasProperty(this._elName, name, []);
+    (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
   }
 
   ngDoCheck() {
@@ -152,8 +153,8 @@ export class SetAttrs extends ObjDirective {
 
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
 function getContext(view: ViewContainerRef): Object {
-  let condition = (x: { context: any }) => R.contains(x.context.constructor)([Object, NgForRow]);
-  return transformWhile(condition, y => y.parent, (<ViewContainer> (view['_element'])).parentView).context;
+  let condition = (x: DebugNode) => R.contains(x.context.constructor)([Object, NgForRow]);
+  return transformWhile(condition, y => y.parent, (<ViewContainer> (view['_element'])).parentView).context; // <DebugNode>?
 }
 
 // dynamically bind properties/attributes (cf. SetAttrs), using strings evaluated in the component context
@@ -193,9 +194,9 @@ export class DynamicAttrs extends DynamicDirective(ObjDirective) {
   }
 
   private _setItem(name: string, evalStr: string): void {
-    let method = keyMethod(this._registry, this._elName, name);
+    let isProp = this._registry.hasProperty(this._elName, name, []);
     let val = evalExpr(this._context, this._extra)(evalStr);
-    this._renderer[method](this._el, name, val);
+    (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
   }
 
 }

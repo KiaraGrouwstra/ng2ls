@@ -10,30 +10,38 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var R = require("ramda");
 var core_1 = require("@angular/core");
+var dom_element_schema_registry_1 = require("@angular/compiler/src/schema/dom_element_schema_registry");
 var lang_1 = require("@angular/core/src/facade/lang");
 var js_1 = require("./js");
 var ng_for_1 = require("@angular/common/src/directives/ng_for");
-// [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
-// [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
-// [properties / IDL attributes](https://www.w3.org/TR/DOM-Level-2-HTML/idl-definitions.html)
-// PropertyBindingType: Property, Attribute, Class, Style -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_ast.ts
-// [prefix definitions](https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_parser.ts)
-// each calls a respective `setElement*` -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/view_compiler/property_binder.ts
-var setMethod = {
-    property: 'setElementProperty',
-    attribute: 'setElementAttribute',
-    "class": 'setElementClass',
-    style: 'setElementStyle'
-};
-// https://github.com/angular/angular/blob/master/modules/%40angular/platform-browser/src/web_workers/worker/_renderer.ts
-// setText, invokeElementMethod, listen, listenGlobal
-// this._el.style.backgroundColor = color;
-// return a string key of the method to set the given key for the element in question
-function keyMethod(registry, elName, k) {
-    return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
-}
+// // [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
+// // [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
+// // [properties / IDL attributes](https://www.w3.org/TR/DOM-Level-2-HTML/idl-definitions.html)
+// // PropertyBindingType: Property, Attribute, Class, Style -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_ast.ts
+// // [prefix definitions](https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/template_parser.ts)
+// // each calls a respective `setElement*` -- https://github.com/angular/angular/blob/master/modules/angular2/src/compiler/view_compiler/property_binder.ts
+// const setMethod = {
+//   property: 'setElementProperty',
+//   attribute: 'setElementAttribute',
+//   class: 'setElementClass',
+//   style: 'setElementStyle',
+//   // directive: 'setElementDirective',  // <-- nope, doesn't exist :(
+//   // ^ compiled components instantiate directives (names numbered!), then in
+//   // `detectChangesInternal` feeds the expression results into their inputs,
+//   // and finally saves the result to detect changes on the next check.
+// };
+// // https://github.com/angular/angular/blob/master/modules/%40angular/platform-browser/src/web_workers/worker/_renderer.ts
+// // setText, invokeElementMethod, listen, listenGlobal
+// // this._el.style.backgroundColor = color;
+// // return a string key of the method to set the given key for the element in question
+// function keyMethod(registry: DomElementSchemaRegistry, elName: string, k: string): string {
+//   return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
+// }
 var ObjDirective = (function () {
     function ObjDirective() {
     }
@@ -117,8 +125,8 @@ var SetAttrs = (function (_super) {
         return _this;
     }
     SetAttrs.prototype._setItem = function (name, val) {
-        var method = keyMethod(this._registry, this._elName, name);
-        (this._renderer[method])(this._el, name, val);
+        var isProp = this._registry.hasProperty(this._elName, name, []);
+        (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
     };
     SetAttrs.prototype.ngDoCheck = function () {
         if (lang_1.isPresent(this._differ)) {
@@ -145,14 +153,18 @@ var SetAttrs = (function (_super) {
 SetAttrs = __decorate([
     core_1.Directive({
         selector: '[setAttrs]',
-        inputs: ['attributes: setAttrs']
-    })
+        inputs: ['attributes: setAttrs'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        dom_element_schema_registry_1.DomElementSchemaRegistry])
 ], SetAttrs);
 exports.SetAttrs = SetAttrs;
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
 function getContext(view) {
     var condition = function (x) { return R.contains(x.context.constructor)([Object, ng_for_1.NgForRow]); };
-    return js_1.transformWhile(condition, function (y) { return y.parent; }, (view['_element']).parentView).context;
+    return js_1.transformWhile(condition, function (y) { return y.parent; }, (view['_element']).parentView).context; // <DebugNode>?
 }
 // dynamically bind properties/attributes (cf. SetAttrs), using strings evaluated in the component context
 // intended as a `[[prop]]="evalStr"`, if now `[dynamicAttrs]="{ prop: evalStr }"`
@@ -183,17 +195,22 @@ var DynamicAttrs = (function (_super) {
         return _this;
     }
     DynamicAttrs.prototype._setItem = function (name, evalStr) {
-        var method = keyMethod(this._registry, this._elName, name);
+        var isProp = this._registry.hasProperty(this._elName, name, []);
         var val = js_1.evalExpr(this._context, this._extra)(evalStr);
-        this._renderer[method](this._el, name, val);
+        (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
     };
     return DynamicAttrs;
 }(DynamicDirective(ObjDirective)));
 DynamicAttrs = __decorate([
     core_1.Directive({
         selector: '[dynamicAttrs]',
-        inputs: ['attributes: dynamicAttrs', 'extraVars: extraVars']
-    })
+        inputs: ['attributes: dynamicAttrs', 'extraVars: extraVars'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        dom_element_schema_registry_1.DomElementSchemaRegistry,
+        core_1.ViewContainerRef])
 ], DynamicAttrs);
 exports.DynamicAttrs = DynamicAttrs;
 var AppliesDirective = (function (_super) {
@@ -229,8 +246,13 @@ var AppliesDirective = (function (_super) {
 AppliesDirective = __decorate([
     core_1.Directive({
         selector: '[applies]',
-        inputs: ['doesApply: applies', 'extraVars: extraVars']
-    })
+        inputs: ['doesApply: applies', 'extraVars: extraVars'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        dom_element_schema_registry_1.DomElementSchemaRegistry,
+        core_1.ViewContainerRef])
 ], AppliesDirective);
 exports.AppliesDirective = AppliesDirective;
 var AppliesExprDirective = (function (_super) {
@@ -267,8 +289,13 @@ var AppliesExprDirective = (function (_super) {
 AppliesExprDirective = __decorate([
     core_1.Directive({
         selector: '[appliesExpr]',
-        inputs: ['doesApply: appliesExpr', 'extraVars: extraVars']
-    })
+        inputs: ['doesApply: appliesExpr', 'extraVars: extraVars'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        dom_element_schema_registry_1.DomElementSchemaRegistry,
+        core_1.ViewContainerRef])
 ], AppliesExprDirective);
 exports.AppliesExprDirective = AppliesExprDirective;
 // set styles dynamically (cf. NgStyle), using strings evaluated in the component context
@@ -300,8 +327,12 @@ var DynamicStyle = (function (_super) {
 DynamicStyle = __decorate([
     core_1.Directive({
         selector: '[dynamicStyle]',
-        inputs: ['attributes: dynamicStyle', 'extraVars: extraVars']
-    })
+        inputs: ['attributes: dynamicStyle', 'extraVars: extraVars'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        core_1.ViewContainerRef])
 ], DynamicStyle);
 exports.DynamicStyle = DynamicStyle;
 // set classes dynamically (cf. NgClass), using strings evaluated in the component context
@@ -333,8 +364,12 @@ var DynamicClass = (function (_super) {
 DynamicClass = __decorate([
     core_1.Directive({
         selector: '[dynamicClass]',
-        inputs: ['attributes: dynamicClass', 'extraVars: extraVars']
-    })
+        inputs: ['attributes: dynamicClass', 'extraVars: extraVars'],
+    }),
+    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
+        core_1.ElementRef,
+        core_1.Renderer,
+        core_1.ViewContainerRef])
 ], DynamicClass);
 exports.DynamicClass = DynamicClass;
 // set local template variables from an object.
@@ -358,8 +393,9 @@ var AssignLocal = (function () {
 AssignLocal = __decorate([
     core_1.Directive({
         selector: '[assignLocal]',
-        inputs: ['localVariable: assignLocal']
-    })
+        inputs: ['localVariable: assignLocal'],
+    }),
+    __metadata("design:paramtypes", [core_1.ViewContainerRef])
 ], AssignLocal);
 exports.AssignLocal = AssignLocal;
 // binding to [multiple events](https://github.com/angular/angular/issues/6675)

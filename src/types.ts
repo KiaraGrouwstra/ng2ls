@@ -33,6 +33,8 @@ declare namespace Types {
   // a function mapping objects to objects using an object of transformation functions
   export type ObjectMapper = (mapping: Obj<Function>) => Function;
 
+  export type Fn<T> = (...args: any[]) => T;
+
 }
 
 export = Types;

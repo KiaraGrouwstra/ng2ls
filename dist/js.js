@@ -32,7 +32,7 @@ function urlBit(url, part) {
 // convert a GET query string (part after `?`) to an object
 function fromQuery(str) {
     var params = decodeURIComponent(str).split('&');
-    return R.fromPairs(params.map(function (y) { return y.split('='); }));
+    return R.fromPairs(params.map(function (s) { return s.split('='); }));
 }
 exports.fromQuery = fromQuery;
 // convert an object to a GET query string (part after `?`) -- replaces jQuery's param()
@@ -70,7 +70,7 @@ function combine(fn, allow_undef) {
             var name_1 = names[i]
                 .replace(/_\d+$/, ''); // fixes SweetJS suffixing all names with like _123. this will however break functions already named .*_\d+, e.g. foo_123
             // do not minify the code while uing this function, it will break -- functions wrapped in combine will no longer trigger.
-            if (R.isUndefined(v) && !allow_undef[name_1])
+            if (typeof v === 'undefined' && !allow_undef[name_1])
                 return; // || R.isNil(v)
         }
         exports.callFn(fn, this, arguments); //return
@@ -98,6 +98,7 @@ function tryLog(fn) {
         }
         catch (e) {
             console.warn('tryLog error:', e);
+            return undefined;
         }
     };
 }
@@ -105,7 +106,7 @@ exports.tryLog = tryLog;
 // create a Component, decorating the class with the provided metadata
 // export let FooComp = ng2comp({ component: {}, parameters: [], decorators: {}, class: class FooComp {} })
 function ng2comp(o) {
-    var _a = o.component, component = _a === void 0 ? {} : _a, _b = o.parameters, parameters = _b === void 0 ? [] : _b, _c = o.decorators, decorators = _c === void 0 ? {} : _c, cls = o["class"];
+    var _a = o.component, component = _a === void 0 ? {} : _a, _b = o.parameters, parameters = _b === void 0 ? [] : _b, _c = o.decorators, decorators = _c === void 0 ? {} : _c, cls = o.class;
     cls['annotations'] = [new core_1.Component(component)];
     cls['parameters'] = parameters.map(function (x) { return x._desc ? x : [x]; });
     R.keys(decorators).forEach(function (k) {
@@ -149,7 +150,7 @@ exports.evalExpr = function (context, vars) {
     if (vars === void 0) { vars = {}; }
     return function (expr) {
         var varArr = [context, vars];
-        var propObj = Object.assign.apply(Object, [{}].concat(varArr.concat(varArr.map(function (x) { return Object.getPrototypeOf(x); })).map(function (x) { return exports.arr2obj(function (k) { return x[k]; })(Object.getOwnPropertyNames(x)); })));
+        var propObj = Object.assign.apply(Object, [{}].concat(varArr.concat(varArr.map(function (x) { return Object.getPrototypeOf(x); })).map(function (x) { return exports.arr2obj(function (k) { return x[k.toString()]; })(Object.getOwnPropertyNames(x)); })));
         var _a = splitObj(propObj), keys = _a[0], vals = _a[1];
         var fn = Function.apply(context, keys.concat("return " + expr));
         return fn.apply(context, vals);
@@ -214,9 +215,10 @@ function parameterizeStructure(val, iterableColl) {
     }, val);
     // make reducer iterating over paths to inject a value into each from a parameter
     return function () {
+        var args = arguments;
         var paramColl = iterableColl.map(function (_a, idx) {
             var path = _a[0], iter = _a[1];
-            return [path, arguments[idx]];
+            return [path, args[idx]];
         });
         return paramColl.reduce(function (v, _a) {
             var path = _a[0], param = _a[1];
@@ -236,7 +238,7 @@ exports.MAX_ARRAY = Math.pow(2, 32) - 1;
 // potentially add { sync, async } and { item, structure } wrappers in ValidatorStruct.
 function editCtrl(fb, val, vldtr) {
     return isObject(val) ? fb.group(R.mapObjIndexed(function (v, k) { return editCtrl(fb, v, vldtr[k]); })(val)) :
-        R.is(Array)(val) ? fb.array(val.map(function (v, k) { return editCtrl(fb, v, vldtr); })) :
+        R.is(Array)(val) ? fb.array(val.map(function (v, i) { return editCtrl(fb, v, vldtr); })) :
             fb.control(val, vldtr);
 }
 exports.editCtrl = editCtrl;

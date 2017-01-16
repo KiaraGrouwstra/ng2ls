@@ -10,6 +10,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 var core_1 = require("@angular/core");
 var http_1 = require("@angular/http");
 var http_2 = require("@covalent/http");
@@ -20,14 +23,14 @@ var ApiService = (function (_super) {
         path) {
         var _this = _super.call(this, _http, {
             baseHeaders: new http_1.Headers({
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             }),
             // dynamicHeaders: () => new Headers({
             //   Authorization: `Bearer ${this._tokenService.access_token}`,
             // }),
             baseUrl: API_DOMAIN,
             path: "/api/" + path,
-            transform: function (res) { return res.json(); }
+            transform: function (res) { return res.json(); },
         }) || this;
         _this._http = _http;
         return _this;
@@ -35,7 +38,8 @@ var ApiService = (function (_super) {
     return ApiService;
 }(http_2.RESTService));
 ApiService = __decorate([
-    core_1.Injectable()
+    core_1.Injectable(),
+    __metadata("design:paramtypes", [http_1.Http, String])
 ], ApiService);
 exports.ApiService = ApiService;
 // naive way of applying RESTService, must redo DI just to inject path
@@ -47,7 +51,8 @@ var ProjectService = (function (_super) {
     return ProjectService;
 }(ApiService));
 ProjectService = __decorate([
-    core_1.Injectable()
+    core_1.Injectable(),
+    __metadata("design:paramtypes", [http_1.Http])
 ], ProjectService);
 exports.ProjectService = ProjectService;
 // // smarter approach, but still errors:

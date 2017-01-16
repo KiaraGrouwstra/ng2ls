@@ -11,8 +11,8 @@
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
-    "outDir": "./release",
-    "rootDir": ".",
+    "outDir": "./dist",
+    "rootDir": "./src",
     "lib": ["es2016", "dom"],
     "target": "es5",
     "skipLibCheck": true,
@@ -22,12 +22,12 @@
     ]
   },
   "include": [
-    "node_modules/@types/**/*.ts",
+    // "node_modules/@types/**/*.ts",
     "src/**/*.ts"
   ],
-  // "exclude": [
-  // 	"node_modules"
-  // ],
+  "exclude": [
+  	"node_modules"
+  ],
   "angularCompilerOptions": {
     "strictMetadataEmit": true
   }

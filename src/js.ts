@@ -1,10 +1,10 @@
 import * as R from 'ramda';
 let $ = require('jquery');
 import { Component } from '@angular/core';
-import { ValidatorFn, FormBuilder, FormControl, FormArray, FormGroup } from '@angular/forms';
+import { ValidatorFn, FormBuilder, FormControl, FormArray, FormGroup, AbstractControl } from '@angular/forms';
 import { Maybe } from 'sanctuary';
 // let CryptoJS = require('crypto-js');
-import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, StringLike } from './types';
+import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, StringLike, Fn } from './types';
 
 require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
@@ -34,7 +34,7 @@ function urlBit(url: Location, part: string): Object {
 // convert a GET query string (part after `?`) to an object
 export function fromQuery(str: string): Object {
   let params = decodeURIComponent(str).split('&');
-  return R.fromPairs(params.map(y => y.split('=')));
+  return R.fromPairs(params.map((s: string) => <[string, string]> s.split('=')));
 }
 
 // convert an object to a GET query string (part after `?`) -- replaces jQuery's param()
@@ -50,19 +50,19 @@ export function toQuery(obj: {}): string {
 // value for input, it will return a default value of its output type
 // intercepts bad input values for a function so as to return a default output value
 // ... this might hurt when switching to like Immutable.js though.
-export function typed<T>(from: Type<any>[], to: Type<T>, fn: (...args: any[]) => T|any): T|undefined { //T: (...) => to
+export function typed<T>(from: Type<any>[], to: Type<T>, fn: Fn<T>): Fn<T> { //T: (...) => to
   return function() {
     for (let i = 0; i < from.length; i++) {
       let frm = from[i];
       let v = arguments[i];
-      if(frm && (R.isNil(v) || v.constructor != frm)) return (new to).valueOf();
+      if(frm && (R.isNil(v) || v.constructor != frm)) return <T> (new to).valueOf();
     }
     return callFn(fn, this, arguments);
   };
 }
 
 // wrapper for setter methods, return if not all parameters are defined
-export function combine<T extends Function>(fn: T, allow_undef: {[key: string]: boolean} = {}): T {
+export function combine<T>(fn: Fn<T>, allow_undef: {[key: string]: boolean} = {}): (v: T) => void {
   return function() {
     // let names = /([^\(]+)(?=\))'/.exec(fn.toString()).split(',').slice(1);
     let names = fn.toString().split('(')[1].split(')')[0].split(/[,\s]+/);
@@ -71,14 +71,14 @@ export function combine<T extends Function>(fn: T, allow_undef: {[key: string]: 
       let name = names[i]
         .replace(/_\d+$/, '')   // fixes SweetJS suffixing all names with like _123. this will however break functions already named .*_\d+, e.g. foo_123
         // do not minify the code while uing this function, it will break -- functions wrapped in combine will no longer trigger.
-      if(R.isUndefined(v) && !allow_undef[name]) return; // || R.isNil(v)
+      if(typeof v === 'undefined' && !allow_undef[name]) return; // || R.isNil(v)
     }
     callFn(fn, this, arguments);  //return
   };
 }
 
 // simpler guard, just a try-catch wrapper with default value
-export function fallback<T>(def: any, fn: Type<T>): T {  //fn: (...) => T
+export function fallback<T>(def: T, fn: Fn<T>): Fn<T> {  //fn: (...) => T
   return function() {
     try {
       return callFn(fn, this, arguments);
@@ -91,13 +91,14 @@ export function fallback<T>(def: any, fn: Type<T>): T {  //fn: (...) => T
 }
 
 // just log errors. only useful in contexts with silent crash.
-export function tryLog<T extends Function>(fn: T): T {
+export function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
   return function() {
     try {
       return callFn(fn, this, arguments);
     }
     catch(e) {
       console.warn('tryLog error:', e);
+      return undefined;
     }
   };
 }
@@ -108,7 +109,7 @@ export function ng2comp<TComp extends Type<any>>(o: { component?: {}, parameters
   let { component = {}, parameters = [], decorators = {}, class: cls } = o;
   cls['annotations'] = [new Component(component)];
   cls['parameters'] = parameters.map(x => x._desc ? x : [x]);
-R.keys(decorators).forEach((k: string) => {
+  R.keys(decorators).forEach((k: string) => {
     Reflect.decorate([decorators[k]], cls.prototype, k);
   });
   // return Component(component)(cls);
@@ -123,7 +124,7 @@ export function findIndexSet<T>(x: any, set: Set<T>): number {
 // editVals from elins; map values of an object using a mapper
 
 // only keep properties in original object
-export let editValsOriginal: ObjectMapper = R.curry((fnObj, obj: Object) => R.mapObjIndexed(<T>(v: T, k: string) => {
+export let editValsOriginal: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) => R.mapObjIndexed(<T>(v: T, k: string) => {
   let fn = fnObj[k];
   return fn ? fn(v) : v
 })(obj));
@@ -131,11 +132,11 @@ export let editValsOriginal: ObjectMapper = R.curry((fnObj, obj: Object) => R.ma
 // export let editVals = (fnObj) => (obj) => R.reduce((acc, fn, k) => _.update(k, fn(acc[k]))(acc), obj)(fnObj);
 // ^ no k in FP
 // keep all original properties, map even over keys not in the original object
-export let editValsBoth: ObjectMapper = R.curry((fnObj, obj: Object) =>
+export let editValsBoth: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) =>
     R.keys(fnObj).reduce((acc, k: string) => R.assoc(k, fnObj[k])(acc), obj));
 
 // only keep properties in mapper object, map even over keys not in the original object
-export let editValsLambda: ObjectMapper = R.curry((fnObj, obj: Object) => R.mapObjIndexed((fn: Function, k: string) => {
+export let editValsLambda: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) => R.mapObjIndexed((fn: Function, k: string) => {
   let v = obj[k];
   return fn ? fn(v) : v
 })(fnObj));
@@ -150,7 +151,7 @@ export function splitObj(obj: {}): [string[], any[]] {
 export let evalExpr = (context: {}, vars: {} = {}) => (expr: string) => {
     let varArr = [context, vars];
     let propObj = Object.assign({}, ...[...varArr, ...varArr.map(x => Object.getPrototypeOf(x))]
-        .map(x => arr2obj(k => x[k])(Object.getOwnPropertyNames(x))));
+        .map(x => arr2obj(k => x[k.toString()])(Object.getOwnPropertyNames(x))));
     let [keys, vals] = splitObj(propObj);
     let fn = Function.apply(context, keys.concat(`return ${expr}`));
     return fn.apply(context, vals);
@@ -158,7 +159,7 @@ export let evalExpr = (context: {}, vars: {} = {}) => (expr: string) => {
 
 // print a complex object for debugging -- regular log sucks cuz it elides values, JSON.stringify errors on cyclical structures.
 export function print(k: string, v: {}): void {
-  let cname = (v: any) => v ? v.constructor.name : null;
+  let cname = (v: any) => v ? <string> v.constructor.name : null;
   console.log(k, cname(v), R.map(cname)(v));
 };
 
@@ -187,7 +188,7 @@ export class ExtendableError extends Error {
 const isObject = R.both(R.is(Object), R.complement(R.is(Array)));
 
 // extract any iterables wrapped in functions from a json structure as a collection of <path, iterable> tuples
-export function extractIterables(v: any, path: string[] = [], iters: Array<[Path, any[]]> = []): Array<[Path, any[]]> {
+export function extractIterables(v: any, path: Prop[] = [], iters: Array<[Path, any[]]> = []): Array<[Path, any[]]> {
   if(R.is(Array)(v)) {
     v.map((x: any, i: number) => extractIterables(x, path.concat(i), iters));
   } else if(isObject(v)) {
@@ -204,7 +205,8 @@ export function parameterizeStructure(val: any, iterableColl: Array<[Path, any[]
   let slotted = iterableColl.reduce((v, [path, iterable]) => R.assoc(path, undefined)(v), val);
   // make reducer iterating over paths to inject a value into each from a parameter
   return function() {
-    let paramColl = iterableColl.map(([path, iter], idx) => [path, arguments[idx]]);
+    let args = arguments;
+    let paramColl = iterableColl.map(([path, iter], idx) => [path, args[idx]]);
     return paramColl.reduce((v, [path, param]) => R.assoc(path, param)(v), slotted);
   }
 }
@@ -222,9 +224,9 @@ export type ValidatorStruct = ValidatorFn | { [k: string]: ValidatorStruct };
 // Matches up validator/control numbers by array sizes in the value.
 // TODO: add `AsyncValidator`s, structure-level (as opposed to item-level) validators
 // potentially add { sync, async } and { item, structure } wrappers in ValidatorStruct.
-export function editCtrl(fb: FormBuilder, val: any, vldtr: ValidatorStruct) {
+export function editCtrl(fb: FormBuilder, val: any, vldtr: ValidatorStruct): AbstractControl {
   return isObject(val) ? fb.group(R.mapObjIndexed((v: any, k: string) => editCtrl(fb, v, (<{ [k: string]: ValidatorStruct }>vldtr)[k]))(val)) :
-      R.is(Array)(val) ? fb.array(val.map((v: any, k: string) => editCtrl(fb, v, <ValidatorFn>vldtr))) :
+      R.is(Array)(val) ? fb.array(val.map((v: any, i: number) => editCtrl(fb, v, <ValidatorFn>vldtr))) :
       fb.control(val, <ValidatorFn>vldtr);
 }
 // ^ still UNUSED, but needed to load in existing values to edit!
@@ -234,9 +236,9 @@ export let mapNestedBoth = <T,U>(f: (v: NestedBoth<T>, path: Path) => U, v: T, p
   R.is(Object)(v) ? R.mapObjIndexed((x: any, k: string) => mapNestedBoth(x, path.concat(k))) :
   f(v, path);
 
-export let mapNestedArr = <T,U>(f: (v: NestedArr<T>, path: Path) => U, v: T, path: Prop[] = []): NestedArr<U> =>
-  R.is(Array)(v) ? (<Array> v).map((x: any, i: number) => mapNestedArr(f, x, path.concat(i))) :
-  f(v, path);
+export let mapNestedArr = <T,U>(f: (v: NestedArr<T>|T, path: Path) => U, v: T, path: Prop[] = []): NestedArr<U> =>
+  R.is(Array)(v) ? (<NestedArr<T>> v).map((x: any, i: number) => mapNestedArr(f, x, path.concat(i))) :
+  f(<T>v, path);
 
 export let mapNestedObject = <T,U>(f: (v: NestedObj<T>, path: Path) => U, v: T, path: Prop[] = []): NestedObj<U> =>
   R.is(Object)(v) ? R.mapObjIndexed((x: any, k: string) => mapNestedObject(f, x, path.concat(k))) :
@@ -253,4 +255,4 @@ export let lookupOr = R.curry((o: Object, k: string) => lookup(o, k) || k);
 // // bypass Angular security (aimed at user-supplied data) for safe hardcoded values
 // const safe = R.objOf('changingThisBreaksApplicationSecurity');
 
-export let callFn = (fn: Function, thisArg: any, args: IArguments) => Function.call(fn, thisArg, ...Array.prototype.slice.call(args));
+export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => Function.call(fn, thisArg, ...Array.prototype.slice.call(args));

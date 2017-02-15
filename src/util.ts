@@ -1,6 +1,6 @@
 import * as R from 'ramda';
-import * as jQuery from 'jquery';
-import { Obj } from './models';
+// import * as jQuery from 'jquery';
+import { Obj } from './models/models';
 
 // coerces an action label string into a string literal, enabling typechecking (TS2.0 tagged union types), and ensuring uniqueness
 let typeCache: { [label: string]: boolean } = {};
@@ -25,7 +25,8 @@ export let trace = R.curry((tag: string, x: any) => {
   return x;
 });
 
-export let toQuery = jQuery.param;
+// export let toQuery = jQuery.param;
+export let toQuery: (obj: Obj<any>) => string = R.pipe(R.toPairs, R.map(R.join('=')), R.join('&'));
 // create a url with query params from an object
 export function makeUrl(url: string, pars = {}): string {
   return R.keys(pars).length ? `${url}?${toQuery(pars)}` : url;

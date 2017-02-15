@@ -10,7 +10,14 @@ var core_1 = require("@angular/core");
 require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
 // make an object from an array with mapper function
-exports.arr2obj = function (fn) { return function (arr) { return R.pipe(R.map(function (k) { return [k, fn(k)]; }), R.fromPairs); }; };
+exports.arr2obj = function (fn) { return function (arr) {
+    return R.pipe(
+    // Ramda issue... doesn't know what will go in so somehow decides on the last option, functor, while I need the first option, list
+    // <(list: ArrayLike<StringLike>) => [string, T][]>
+    // <[string, T][]>
+    // R.map((k: StringLike): [string, T] => [k.toString(), fn(k)]),
+    function (list) { return list.map(function (k) { return [k.toString(), fn(k)]; }); }, R.fromPairs)(arr);
+}; };
 // make a Map from an array with mapper function
 function arr2map(arr, fn) {
     return arr.reduce(function (map, k) { return map.set(k, fn(k)); }, new Map());
@@ -107,13 +114,13 @@ exports.tryLog = tryLog;
 // export let FooComp = ng2comp({ component: {}, parameters: [], decorators: {}, class: class FooComp {} })
 function ng2comp(o) {
     var _a = o.component, component = _a === void 0 ? {} : _a, _b = o.parameters, parameters = _b === void 0 ? [] : _b, _c = o.decorators, decorators = _c === void 0 ? {} : _c, cls = o.class;
-    cls['annotations'] = [new core_1.Component(component)];
-    cls['parameters'] = parameters.map(function (x) { return x._desc ? x : [x]; });
     R.keys(decorators).forEach(function (k) {
         Reflect.decorate([decorators[k]], cls.prototype, k);
     });
-    // return Component(component)(cls);
-    return cls;
+    return Object.assign(cls, {
+        annotations: [new core_1.Component(component)],
+        parameters: parameters.map(function (x) { return x instanceof core_1.OpaqueToken ? x : [x]; }),
+    });
 }
 exports.ng2comp = ng2comp;
 ;
@@ -242,23 +249,33 @@ function editCtrl(fb, val, vldtr) {
             fb.control(val, vldtr);
 }
 exports.editCtrl = editCtrl;
-// ^ still UNUSED, but needed to load in existing values to edit!
-exports.mapNestedBoth = function (f, v, path) {
-    if (path === void 0) { path = []; }
-    return R.is(Array)(v) ? v.map(function (x, i) { return exports.mapNestedBoth(x, path.concat(i)); }) :
-        R.is(Object)(v) ? R.mapObjIndexed(function (x, k) { return exports.mapNestedBoth(x, path.concat(k)); }) :
-            f(v, path);
-};
+/**
+ * map the contents of a nested yet otherwise homogeneous array (e.g. [1, [[2], 3]])
+ */
 exports.mapNestedArr = function (f, v, path) {
     if (path === void 0) { path = []; }
-    return R.is(Array)(v) ? v.map(function (x, i) { return exports.mapNestedArr(f, x, path.concat(i)); }) :
-        f(v, path);
+    return v.map(function (x, i) {
+        return mapNestedArr_(f, x, path.concat(i));
+    });
 };
-exports.mapNestedObject = function (f, v, path) {
+var mapNestedArr_ = function (f, v, path) {
     if (path === void 0) { path = []; }
-    return R.is(Object)(v) ? R.mapObjIndexed(function (x, k) { return exports.mapNestedObject(f, x, path.concat(k)); }) :
+    return R.is(Array)(v) ? v.map(function (x, i) { return mapNestedArr_(f, x, path.concat(i)); }) :
         f(v, path);
 };
+/**
+ * map the contents of a nested yet otherwise homogeneous object (e.g. { a: 1, z: { y: { b: 2 }, c: 3 } })
+ */
+exports.mapNestedObj = function (f, v, path) {
+    if (path === void 0) { path = []; }
+    return R.mapObjIndexed(function (x, k) { return mapNestedObj_(f, x, path.concat(k)); })(v);
+};
+var mapNestedObj_ = function (f, v, path) {
+    if (path === void 0) { path = []; }
+    return R.is(Object)(v) ? R.mapObjIndexed(function (x, k) { return mapNestedObj_(f, x, path.concat(k)); })(v) :
+        f(v, path);
+};
+// export let mapNestedBoth = ...
 exports.falsy = R.either(R.isEmpty, R.isNil);
 exports.truthy = R.complement(exports.falsy); // differs from JS's 'truthy': []/{} -> false.
 // look up the property corresponding to a string in a lookup object

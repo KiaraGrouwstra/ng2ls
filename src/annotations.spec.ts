@@ -1,7 +1,7 @@
 import { ExtComp } from './annotations';
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Type } from './types';
-import { Reflect, getMetadata } from 'reflect-metadata'; // /Reflect
+// import { Reflect, getMetadata } from 'reflect-metadata'; // /Reflect
 
 const { OnPush, Default } = ChangeDetectionStrategy;
 

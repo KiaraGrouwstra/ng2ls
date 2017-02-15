@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers, Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+// import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { RESTService } from '@covalent/http';
 // import { API_DOMAIN } from '../../constants';
+const API_DOMAIN = 'https://example.com/'
 // import { TokenService } from './token';
 // import { Project } from '../models';
 

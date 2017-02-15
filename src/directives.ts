@@ -1,14 +1,16 @@
 import * as R from 'ramda';
 import { Directive, Renderer, ElementRef, ViewContainerRef, EmbeddedViewRef, ViewRef, TemplateRef, DoCheck, KeyValueDiffer, KeyValueDiffers, KeyValueChangeRecord, ChangeDetectorRef, DebugNode } from '@angular/core';
 import { ViewContainer } from '@angular/core/src/linker/view_container';
+import { ViewContainerRef_ } from '@angular/core/src/linker/view_container_ref';
 import { DomElementSchemaRegistry } from '@angular/compiler/src/schema/dom_element_schema_registry';
 import { Component } from '@angular/core';
+import { AppView } from '@angular/core/src/linker/view';
 import { isPresent, isBlank } from '@angular/core/src/facade/lang';
 import { evalExpr, transformWhile, print } from './js';
 import { NgForRow } from '@angular/common/src/directives/ng_for';
 // import { ExtDir } from './annotations';
 import { Obj, Type } from './types';
-export { ObjDirective };
+// export { ObjDirective };
 
 // // [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
 // // [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
@@ -35,20 +37,26 @@ export { ObjDirective };
 //   return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
 // }
 
-abstract class ObjDirective implements DoCheck {
+// abstract
+export class ObjDirective implements DoCheck {
   _el: HTMLElement;
-  _obj: Obj<string>;
   _elName: string;
-  _differ: KeyValueDiffer;
   _differs: KeyValueDiffers;
   _cdr: ChangeDetectorRef;
 
+  // DynamicDirective
+  _context: Object;
+  _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
+  _setItem(name: string, val: string|null): void {};
+
   // constructor(
   //   // ObjDirective
-  //   private _differs: KeyValueDiffers,
-  //   private _elRef: ElementRef,
-  //   private _renderer: Renderer,
-  //   private _cdr: ChangeDetectorRef,
+  //   public _differs: KeyValueDiffers,
+  //   public _elRef: ElementRef,
+  //   public _renderer: Renderer,
+  //   public _cdr: ChangeDetectorRef,
   // ) {
   //   // ObjDirective
   //   this._el = _elRef.nativeElement;
@@ -61,27 +69,11 @@ abstract class ObjDirective implements DoCheck {
     }
   }
 
-  ngDoCheck() {};
-
-}
-
-// mixin: http://www.2ality.com/2016/05/six-nifty-es6-tricks.html
-const DynamicDirective = <T extends Type<any>>(Sup: T) => class extends Sup {
-  _context: Object;
-  _extra: {};
-  _obj: Obj<string>;
-  _differ: KeyValueDiffer;
-  _setItem: (name: string, val: string|null) => void;
-
-  // constructor() {
-  //   // DynamicDirective
-  //   this._extra = {};
-  // }
-
   set extraVars(obj: {[key: string]: any}) {
     this._extra = obj;
   }
 
+  // ngDoCheck() {};
   ngDoCheck() {
     let obj = this._obj;
     if (isPresent(this._differ)) {
@@ -97,7 +89,43 @@ const DynamicDirective = <T extends Type<any>>(Sup: T) => class extends Sup {
     })(obj);
   }
 
-};
+}
+
+// // mixin: http://www.2ality.com/2016/05/six-nifty-es6-tricks.html
+// // export const DynamicDirective = <T extends Type<any>>(Sup: T) => BaseDirective extends Sup;
+// export const DynamicDirective = <T extends Type<any>>(Sup: T) => class extends Sup {
+// // export class BaseDirective {
+//   _context: Object;
+//   _extra: {};
+//   _obj: Obj<string>;
+//   _differ: KeyValueDiffer;
+//   _setItem(name: string, val: string|null): void {};
+
+//   // constructor() {
+//   //   // DynamicDirective
+//   //   this._extra = {};
+//   // }
+
+//   set extraVars(obj: {[key: string]: any}) {
+//     this._extra = obj;
+//   }
+
+//   ngDoCheck() {
+//     let obj = this._obj;
+//     if (isPresent(this._differ)) {
+//       var changes = this._differ.diff(obj);
+//       if (isPresent(changes)) {
+//         changes.forEachRemovedItem((record: KeyValueChangeRecord) => {
+//           this._setItem(record.key, null);
+//         });
+//       }
+//     }
+//     R.mapObjIndexed((v: any, k: string) => { // forEach
+//       this._setItem(k, v);
+//     })(obj);
+//   }
+
+// };
 
 // set multiple properties/attributes from an object without knowing which is which.
 // named after attributes rather than properties so my json-schema could go with
@@ -111,10 +139,10 @@ export class SetAttrs extends ObjDirective {
   constructor(
     // ObjDirective
     _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    private _registry: DomElementSchemaRegistry,
+    public _registry: DomElementSchemaRegistry,
   ) {
     super();
     // ObjDirective
@@ -123,7 +151,7 @@ export class SetAttrs extends ObjDirective {
     this._elName = this._el.tagName;
   }
 
-  private _setItem(name: string, val: string): void {
+  _setItem(name: string, val: string): void {
     let isProp = this._registry.hasProperty(this._elName, name, []);
     (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
   }
@@ -137,7 +165,7 @@ export class SetAttrs extends ObjDirective {
     }
   }
 
-  private _applyChanges(changes: any): void {
+  public _applyChanges(changes: any): void {
     changes.forEachAddedItem((record: KeyValueChangeRecord) => {
       this._setItem(record.key, record.currentValue);
     });
@@ -152,9 +180,9 @@ export class SetAttrs extends ObjDirective {
 }
 
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
-function getContext(view: ViewContainerRef): Object {
-  let condition = (x: DebugNode) => R.contains(x.context.constructor)([Object, NgForRow]);
-  return transformWhile(condition, y => y.parent, (<ViewContainer> (view['_element'])).parentView).context; // <DebugNode>?
+function getContext(view: ViewContainerRef_ /*ViewContainerRef*/): Obj<any> {
+  let condition = (x: AppView<any>) => R.contains(x.context.constructor)([Object, NgForRow]);
+  return transformWhile(condition, (y: AppView<any>) => y.parentView, (<ViewContainer> view['_element']).parentView).context;
 }
 
 // dynamically bind properties/attributes (cf. SetAttrs), using strings evaluated in the component context
@@ -168,20 +196,24 @@ function getContext(view: ViewContainerRef): Object {
   selector: '[dynamicAttrs]',
   inputs: ['attributes: dynamicAttrs', 'extraVars: extraVars'],
 })
-export class DynamicAttrs extends DynamicDirective(ObjDirective) {
+export class DynamicAttrs extends ObjDirective { // DynamicDirective(ObjDirective) {
   _el: any;
   _elName: string;
+
+  // DynamicDirective
   _context: Object;
   _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
 
   constructor(
     // ObjDirective
-    private _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _differs: KeyValueDiffers,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    private _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef,
+    public _registry: DomElementSchemaRegistry,
+    _viewContainer: ViewContainerRef_,
   ) {
     super();
     // ObjDirective
@@ -193,7 +225,7 @@ export class DynamicAttrs extends DynamicDirective(ObjDirective) {
     this._elName = this._el.tagName;
   }
 
-  private _setItem(name: string, evalStr: string): void {
+  _setItem(name: string, evalStr: string): void {
     let isProp = this._registry.hasProperty(this._elName, name, []);
     let val = evalExpr(this._context, this._extra)(evalStr);
     (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
@@ -205,20 +237,24 @@ export class DynamicAttrs extends DynamicDirective(ObjDirective) {
   selector: '[applies]',
   inputs: ['doesApply: applies', 'extraVars: extraVars'],
 })
-export class AppliesDirective extends DynamicDirective(ObjDirective) {
+export class AppliesDirective extends ObjDirective { // DynamicDirective(ObjDirective) {
   _el: any;
   _elName: string;
+
+  // DynamicDirective
   _context: Object;
   _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
 
   constructor(
     // ObjDirective
-    private _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _differs: KeyValueDiffers,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    private _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef,
+    public _registry: DomElementSchemaRegistry,
+    _viewContainer: ViewContainerRef_,
   ) {
     super();
     // ObjDirective
@@ -240,20 +276,24 @@ export class AppliesDirective extends DynamicDirective(ObjDirective) {
   selector: '[appliesExpr]',
   inputs: ['doesApply: appliesExpr', 'extraVars: extraVars'],
 })
-export class AppliesExprDirective extends DynamicDirective(ObjDirective) {
+export class AppliesExprDirective extends ObjDirective { // DynamicDirective(ObjDirective) {
   _el: any;
   _elName: string;
+
+  // DynamicDirective
   _context: Object;
   _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
 
   constructor(
     // ObjDirective
-    private _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _differs: KeyValueDiffers,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    private _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef,
+    public _registry: DomElementSchemaRegistry,
+    _viewContainer: ViewContainerRef_,
   ) {
     super();
     // ObjDirective
@@ -277,18 +317,22 @@ export class AppliesExprDirective extends DynamicDirective(ObjDirective) {
   selector: '[dynamicStyle]',
   inputs: ['attributes: dynamicStyle', 'extraVars: extraVars'],
 })
-export class DynamicStyle extends DynamicDirective(ObjDirective) {
+export class DynamicStyle extends ObjDirective { // DynamicDirective(ObjDirective) {
   _el: any;
+
+  // DynamicDirective
   _context: Object;
   _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
 
   constructor(
     // ObjDirective
-    private _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _differs: KeyValueDiffers,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    _viewContainer: ViewContainerRef,
+    _viewContainer: ViewContainerRef_,
   ) {
     super();
     // ObjDirective
@@ -299,7 +343,7 @@ export class DynamicStyle extends DynamicDirective(ObjDirective) {
     this._context = getContext(_viewContainer);
   }
 
-  private _setItem(name: string, evalStr: string): void {
+  _setItem(name: string, evalStr: string): void {
     let val = evalExpr(this._context, this._extra)(evalStr);
     this._renderer.setElementStyle(this._el, name, val);
   }
@@ -311,18 +355,22 @@ export class DynamicStyle extends DynamicDirective(ObjDirective) {
   selector: '[dynamicClass]',
   inputs: ['attributes: dynamicClass', 'extraVars: extraVars'],
 })
-export class DynamicClass extends DynamicDirective(ObjDirective) {
+export class DynamicClass extends ObjDirective { // DynamicDirective(ObjDirective) {
   _el: any;
+
+  // DynamicDirective
   _context: Object;
   _extra: {};
+  _obj: Obj<string>;
+  _differ: KeyValueDiffer;
 
   constructor(
     // ObjDirective
-    private _differs: KeyValueDiffers,
-    private _elRef: ElementRef,
-    private _renderer: Renderer,
+    public _differs: KeyValueDiffers,
+    public _elRef: ElementRef,
+    public _renderer: Renderer,
     // this
-    _viewContainer: ViewContainerRef,
+    _viewContainer: ViewContainerRef_,
   ) {
     super();
     // ObjDirective
@@ -333,7 +381,7 @@ export class DynamicClass extends DynamicDirective(ObjDirective) {
     this._context = getContext(_viewContainer);
   }
 
-  private _setItem(name: string, evalStr: string): void {
+  _setItem(name: string, evalStr: string): void {
     let val = evalExpr(this._context, this._extra)(evalStr);
     this._renderer.setElementClass(this._el, name, val);
   }
@@ -349,7 +397,7 @@ export class AssignLocal {
   _el: HTMLElement;
   _context: Obj<any>;
   constructor(
-    _viewContainer: ViewContainerRef,
+    _viewContainer: ViewContainerRef_,
   ) {
     this._context = getContext(_viewContainer);
   }

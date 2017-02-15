@@ -50,11 +50,11 @@ export function notify(kw: string, obs: Observable<any>): Subscription {
 
 // generalizes combineLatest from 2 Observables to an array of n: combLastObs([a$, b$]).map([a, b] => ...)
 export function combLastObs(arr: Observable<any>[]): Observable<any> {
-  return arr.reduce((obj_obs, v, idx) => {
+  return arr.reduce((obj_obs, o, idx) => {
   	  let combiner = (obj: Object, val: any) => Object.assign(obj, {[idx]: val});
-      return R.hasProp('subscribe', v) ?
-        obj_obs.combineLatest(v, combiner) :
-        obj_obs.map(obs => combiner(obs, v));
+      return o.subscribe ?
+        obj_obs.combineLatest(o, combiner) :
+        obj_obs.map(obs => combiner(obs, o));
   	},
     new BehaviorSubject({})
   ).map(r => R.values(r))

@@ -17,6 +17,7 @@ require("rxjs/add/operator/mergeMap");
 require("rxjs/add/operator/toArray");
 require("rxjs/add/operator/debounceTime");
 var R = require("ramda");
+var db_1 = require("@ngrx/db");
 var Observable_1 = require("rxjs/Observable");
 var of_1 = require("rxjs/observable/of");
 var defer_1 = require("rxjs/observable/defer");
@@ -27,14 +28,55 @@ var http_1 = require("@angular/http");
 var effects_2 = require("@ngrx/effects");
 var actions_1 = require("../actions/actions");
 var actions_2 = require("../actions");
+// const book = { SearchAction: class SearchAction { type = 'search'; constructor(public payload: string) {}; } };
+// const { SearchAction } = book;
+var SearchAction = (function () {
+    function SearchAction(payload) {
+        this.payload = payload;
+        this.type = 'search';
+    }
+    ;
+    return SearchAction;
+}());
+var collection = {
+    LoadAction: (function () {
+        function LoadAction(payload) {
+            this.payload = payload;
+            this.type = 'load';
+        }
+        ;
+        return LoadAction;
+    }()),
+    LoadFailAction: (function () {
+        function LoadFailAction(payload) {
+            this.payload = payload;
+            this.type = 'LoadFailAction';
+        }
+        ;
+        return LoadFailAction;
+    }()),
+};
 var foo_1 = require("../actions/foo");
-var constants_1 = require("../../constants");
+// import { TokenService } from '../services'; //, HouseService
+var HouseService = (function () {
+    function HouseService() {
+    }
+    HouseService.prototype.query = function () { return Observable_1.Observable.of([]); };
+    return HouseService;
+}());
+exports.HouseService = HouseService;
+;
+// import { API_DOMAIN } from '../../constants';
+var API_DOMAIN = 'http://www.example.com/';
 // let fetchDevice = ({ payload: deviceId }) => this.http.get(`${API_DOMAIN}/api/devices/wpu/${deviceId}/overview`);
 var HouseEffects = (function () {
-    function HouseEffects(http, actions$) {
+    function HouseEffects(http, actions$, // Observable<>
+        houseService, db) {
         var _this = this;
         this.http = http;
         this.actions$ = actions$;
+        this.houseService = houseService;
+        this.db = db;
         /**
          * `dispatch`: doesn't yield actions back to the store so ignore. `defer` makes an observable when subscribed to.
          */
@@ -45,12 +87,12 @@ var HouseEffects = (function () {
             .ofType(actions_2.actions.houses.types.SEARCH)
             .startWith(new collection.LoadAction()) // trigger this effect immediately on startup
             .debounceTime(300)
-            .map(function (action) { return action.payload; })
+            .map(function (action) { return action.payload; }) // book.
             .switchMap(function (projectId) {
             if (projectId === '') {
                 return empty_1.empty();
             }
-            return _this.http.get(constants_1.API_DOMAIN + "/api/projects/" + projectId + "/houses");
+            return _this.http.get(API_DOMAIN + "/api/projects/" + projectId + "/houses");
             // return this.houseService.query()
         })
             .map(effects_1.unJson)
@@ -80,7 +122,9 @@ __decorate([
 HouseEffects = __decorate([
     core_1.Injectable(),
     __metadata("design:paramtypes", [http_1.Http,
-        effects_2.Actions])
+        effects_2.Actions,
+        HouseService,
+        db_1.Database])
 ], HouseEffects);
 exports.HouseEffects = HouseEffects;
 var makeEffect = function (pair, completeAction, mapper, opts) {
@@ -93,7 +137,7 @@ var makeEffect = function (pair, completeAction, mapper, opts) {
         .debounceTime(debounce || 0)
         .map(actions_1.toPayload);
     var mapped = read ? payload.switchMap(mapper) : payload.mergeMap(mapper); // switchMap cancels previous results
-    var defaulted = !R.isNil(fallback) ? mapped.catch(effects_1.always(fallback)) : mapped;
+    var defaulted = !R.isNil(fallback) ? mapped.catch(function () { return (Observable_1.Observable.of(fallback)); }) : mapped;
     var created = defaulted.map(function (d) { return new completeAction(d); });
     var caught = failAction instanceof Object ? created.catch(function (error) { return of_1.of(new failAction(error)); }) : created;
     return caught;

@@ -15,10 +15,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 var R = require("ramda");
 var core_1 = require("@angular/core");
+var view_container_ref_1 = require("@angular/core/src/linker/view_container_ref");
 var dom_element_schema_registry_1 = require("@angular/compiler/src/schema/dom_element_schema_registry");
 var lang_1 = require("@angular/core/src/facade/lang");
 var js_1 = require("./js");
 var ng_for_1 = require("@angular/common/src/directives/ng_for");
+// export { ObjDirective };
 // // [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
 // // [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
 // // [properties / IDL attributes](https://www.w3.org/TR/DOM-Level-2-HTML/idl-definitions.html)
@@ -42,16 +44,19 @@ var ng_for_1 = require("@angular/common/src/directives/ng_for");
 // function keyMethod(registry: DomElementSchemaRegistry, elName: string, k: string): string {
 //   return setMethod[registry.hasProperty(elName, k, []) ? 'property' : 'attribute'];
 // }
+// abstract
 var ObjDirective = (function () {
     function ObjDirective() {
     }
+    ObjDirective.prototype._setItem = function (name, val) { };
+    ;
     Object.defineProperty(ObjDirective.prototype, "attributes", {
         // constructor(
         //   // ObjDirective
-        //   private _differs: KeyValueDiffers,
-        //   private _elRef: ElementRef,
-        //   private _renderer: Renderer,
-        //   private _cdr: ChangeDetectorRef,
+        //   public _differs: KeyValueDiffers,
+        //   public _elRef: ElementRef,
+        //   public _renderer: Renderer,
+        //   public _cdr: ChangeDetectorRef,
         // ) {
         //   // ObjDirective
         //   this._el = _elRef.nativeElement;
@@ -65,29 +70,15 @@ var ObjDirective = (function () {
         enumerable: true,
         configurable: true
     });
-    ObjDirective.prototype.ngDoCheck = function () { };
-    ;
-    return ObjDirective;
-}());
-exports.ObjDirective = ObjDirective;
-// mixin: http://www.2ality.com/2016/05/six-nifty-es6-tricks.html
-var DynamicDirective = function (Sup) { return (function (_super) {
-    __extends(class_1, _super);
-    function class_1() {
-        return _super.apply(this, arguments) || this;
-    }
-    Object.defineProperty(class_1.prototype, "extraVars", {
-        // constructor() {
-        //   // DynamicDirective
-        //   this._extra = {};
-        // }
+    Object.defineProperty(ObjDirective.prototype, "extraVars", {
         set: function (obj) {
             this._extra = obj;
         },
         enumerable: true,
         configurable: true
     });
-    class_1.prototype.ngDoCheck = function () {
+    // ngDoCheck() {};
+    ObjDirective.prototype.ngDoCheck = function () {
         var _this = this;
         var obj = this._obj;
         if (lang_1.isPresent(this._differ)) {
@@ -102,8 +93,40 @@ var DynamicDirective = function (Sup) { return (function (_super) {
             _this._setItem(k, v);
         })(obj);
     };
-    return class_1;
-}(Sup)); };
+    return ObjDirective;
+}());
+exports.ObjDirective = ObjDirective;
+// // mixin: http://www.2ality.com/2016/05/six-nifty-es6-tricks.html
+// // export const DynamicDirective = <T extends Type<any>>(Sup: T) => BaseDirective extends Sup;
+// export const DynamicDirective = <T extends Type<any>>(Sup: T) => class extends Sup {
+// // export class BaseDirective {
+//   _context: Object;
+//   _extra: {};
+//   _obj: Obj<string>;
+//   _differ: KeyValueDiffer;
+//   _setItem(name: string, val: string|null): void {};
+//   // constructor() {
+//   //   // DynamicDirective
+//   //   this._extra = {};
+//   // }
+//   set extraVars(obj: {[key: string]: any}) {
+//     this._extra = obj;
+//   }
+//   ngDoCheck() {
+//     let obj = this._obj;
+//     if (isPresent(this._differ)) {
+//       var changes = this._differ.diff(obj);
+//       if (isPresent(changes)) {
+//         changes.forEachRemovedItem((record: KeyValueChangeRecord) => {
+//           this._setItem(record.key, null);
+//         });
+//       }
+//     }
+//     R.mapObjIndexed((v: any, k: string) => { // forEach
+//       this._setItem(k, v);
+//     })(obj);
+//   }
+// };
 // set multiple properties/attributes from an object without knowing which is which.
 // named after attributes rather than properties so my json-schema could go with
 // that without causing confusing with its existing `properties` attribute.
@@ -162,9 +185,9 @@ SetAttrs = __decorate([
 ], SetAttrs);
 exports.SetAttrs = SetAttrs;
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
-function getContext(view) {
+function getContext(view /*ViewContainerRef*/) {
     var condition = function (x) { return R.contains(x.context.constructor)([Object, ng_for_1.NgForRow]); };
-    return js_1.transformWhile(condition, function (y) { return y.parent; }, (view['_element']).parentView).context; // <DebugNode>?
+    return js_1.transformWhile(condition, function (y) { return y.parentView; }, view['_element'].parentView).context;
 }
 // dynamically bind properties/attributes (cf. SetAttrs), using strings evaluated in the component context
 // intended as a `[[prop]]="evalStr"`, if now `[dynamicAttrs]="{ prop: evalStr }"`
@@ -200,7 +223,7 @@ var DynamicAttrs = (function (_super) {
         (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
     };
     return DynamicAttrs;
-}(DynamicDirective(ObjDirective)));
+}(ObjDirective));
 DynamicAttrs = __decorate([
     core_1.Directive({
         selector: '[dynamicAttrs]',
@@ -210,7 +233,7 @@ DynamicAttrs = __decorate([
         core_1.ElementRef,
         core_1.Renderer,
         dom_element_schema_registry_1.DomElementSchemaRegistry,
-        core_1.ViewContainerRef])
+        view_container_ref_1.ViewContainerRef_])
 ], DynamicAttrs);
 exports.DynamicAttrs = DynamicAttrs;
 var AppliesDirective = (function (_super) {
@@ -242,7 +265,7 @@ var AppliesDirective = (function (_super) {
         configurable: true
     });
     return AppliesDirective;
-}(DynamicDirective(ObjDirective)));
+}(ObjDirective));
 AppliesDirective = __decorate([
     core_1.Directive({
         selector: '[applies]',
@@ -252,7 +275,7 @@ AppliesDirective = __decorate([
         core_1.ElementRef,
         core_1.Renderer,
         dom_element_schema_registry_1.DomElementSchemaRegistry,
-        core_1.ViewContainerRef])
+        view_container_ref_1.ViewContainerRef_])
 ], AppliesDirective);
 exports.AppliesDirective = AppliesDirective;
 var AppliesExprDirective = (function (_super) {
@@ -285,7 +308,7 @@ var AppliesExprDirective = (function (_super) {
         configurable: true
     });
     return AppliesExprDirective;
-}(DynamicDirective(ObjDirective)));
+}(ObjDirective));
 AppliesExprDirective = __decorate([
     core_1.Directive({
         selector: '[appliesExpr]',
@@ -295,7 +318,7 @@ AppliesExprDirective = __decorate([
         core_1.ElementRef,
         core_1.Renderer,
         dom_element_schema_registry_1.DomElementSchemaRegistry,
-        core_1.ViewContainerRef])
+        view_container_ref_1.ViewContainerRef_])
 ], AppliesExprDirective);
 exports.AppliesExprDirective = AppliesExprDirective;
 // set styles dynamically (cf. NgStyle), using strings evaluated in the component context
@@ -323,7 +346,7 @@ var DynamicStyle = (function (_super) {
         this._renderer.setElementStyle(this._el, name, val);
     };
     return DynamicStyle;
-}(DynamicDirective(ObjDirective)));
+}(ObjDirective));
 DynamicStyle = __decorate([
     core_1.Directive({
         selector: '[dynamicStyle]',
@@ -332,7 +355,7 @@ DynamicStyle = __decorate([
     __metadata("design:paramtypes", [core_1.KeyValueDiffers,
         core_1.ElementRef,
         core_1.Renderer,
-        core_1.ViewContainerRef])
+        view_container_ref_1.ViewContainerRef_])
 ], DynamicStyle);
 exports.DynamicStyle = DynamicStyle;
 // set classes dynamically (cf. NgClass), using strings evaluated in the component context
@@ -360,7 +383,7 @@ var DynamicClass = (function (_super) {
         this._renderer.setElementClass(this._el, name, val);
     };
     return DynamicClass;
-}(DynamicDirective(ObjDirective)));
+}(ObjDirective));
 DynamicClass = __decorate([
     core_1.Directive({
         selector: '[dynamicClass]',
@@ -369,7 +392,7 @@ DynamicClass = __decorate([
     __metadata("design:paramtypes", [core_1.KeyValueDiffers,
         core_1.ElementRef,
         core_1.Renderer,
-        core_1.ViewContainerRef])
+        view_container_ref_1.ViewContainerRef_])
 ], DynamicClass);
 exports.DynamicClass = DynamicClass;
 // set local template variables from an object.
@@ -395,7 +418,7 @@ AssignLocal = __decorate([
         selector: '[assignLocal]',
         inputs: ['localVariable: assignLocal'],
     }),
-    __metadata("design:paramtypes", [core_1.ViewContainerRef])
+    __metadata("design:paramtypes", [view_container_ref_1.ViewContainerRef_])
 ], AssignLocal);
 exports.AssignLocal = AssignLocal;
 // binding to [multiple events](https://github.com/angular/angular/issues/6675)

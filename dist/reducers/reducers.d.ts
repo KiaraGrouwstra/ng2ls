@@ -21,7 +21,7 @@ export declare type ReducerStructMap = {
         [k: string]: <T>(state?: T, payload?: any) => T;
     };
 };
-export declare let reducerStructFn: <T>(struct: ReducerStructMap, initialState: Obj<any>) => any;
+export declare let reducerStructFn: <T>(struct: ReducerStructMap, initialState: Obj<any>) => ActionReducer<Obj<T>>;
 export declare let mapReducers: (obj: R.Dictionary<{}>) => {
     [x: string]: ActionReducer<{}>;
 };

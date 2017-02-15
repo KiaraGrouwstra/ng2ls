@@ -21,9 +21,18 @@ import { Actions, Effect } from '@ngrx/effects';
 
 import { MyAction, toPayload, ActionCtor, ActionPair } from '../actions/actions';
 import { actions } from '../actions';
+// const book = { SearchAction: class SearchAction { type = 'search'; constructor(public payload: string) {}; } };
+// const { SearchAction } = book;
+class SearchAction { type = 'search'; constructor(public payload: string) {}; }
+const collection = {
+  LoadAction: class LoadAction { type = 'load'; constructor(public payload?: null) {}; },
+  LoadFailAction: class LoadFailAction { type = 'LoadFailAction'; constructor(public payload: Error) {}; },
+};
 import { pairs as fooActions } from '../actions/foo';
-import { TokenService } from '../services'; //, HouseService
-import { API_DOMAIN } from '../../constants';
+// import { TokenService } from '../services'; //, HouseService
+export class HouseService { query() { return Observable.of([]); } };
+// import { API_DOMAIN } from '../../constants';
+const API_DOMAIN = 'http://www.example.com/';
 
 // let fetchDevice = ({ payload: deviceId }) => this.http.get(`${API_DOMAIN}/api/devices/wpu/${deviceId}/overview`);
 
@@ -33,7 +42,8 @@ export class HouseEffects {
   constructor(
     private http: Http,
     private actions$: Actions,  // Observable<>
-    // private houseService: HouseService,
+    private houseService: HouseService,
+    private db: Database,
   ) {}
 
   /**
@@ -48,14 +58,14 @@ export class HouseEffects {
       .ofType(actions.houses.types.SEARCH)
       .startWith(new collection.LoadAction()) // trigger this effect immediately on startup
       .debounceTime(300)
-      .map((action: book.SearchAction) => action.payload)
+      .map((action: SearchAction) => action.payload) // book.
       // .map<string>(toPayload)
       // v or mergeMap: switchMap cancels previous results (better for read: GET), mergeMap leaves them intact (better for write: POST/PUT/PATCH/DELETE)
       .switchMap((projectId) => {
         if (projectId === '') {
           return empty();
         }
-      return this.http.get(`${API_DOMAIN}/api/projects/${projectId}/houses` )
+      return this.http.get(`${API_DOMAIN}/api/projects/${projectId}/houses`)
       // return this.houseService.query()
       })
       .map(unJson)
@@ -95,7 +105,7 @@ let makeEffect = <T,U>(pair: ActionPair<T>, completeAction: ActionCtor<U>, mappe
       .debounceTime(debounce || 0)
       .map(toPayload);
   let mapped = read ? payload.switchMap(mapper) : payload.mergeMap(mapper); // switchMap cancels previous results
-  let defaulted = !R.isNil(fallback) ? mapped.catch(always(fallback)) : mapped;
+  let defaulted = !R.isNil(fallback) ? mapped.catch(() => (Observable.of(<U> fallback))) : mapped;
   let created = defaulted.map((d: U) => new completeAction(d))
   let caught = failAction instanceof Object ? created.catch((error: Error) => of(new (<ActionCtor<Error>>failAction)(error))) : created;
   return caught;

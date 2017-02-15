@@ -1,11 +1,14 @@
 import * as R from 'ramda';
 import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { ActionReducer } from '@ngrx/store';
-import * as fromRouter from '@ngrx/router-store';
+import { Action, ActionReducer } from '@ngrx/store';
+// import * as fromRouter from '@ngrx/router-store';
 import { arr2obj, trace } from '../util';
-import { environment } from '../../environments/environment';
-import { Obj, House } from '../models/models';
+// import { environment } from '../../environments/environment';
+let environment = { production: false };
+import { Obj } from '../models/models'; // , House
+export type House = {};
+export type Device = {};
 
 // import { compose } from '@ngrx/core';
 // protect state from mutation (-> error)
@@ -16,16 +19,17 @@ import { combineReducers } from '@ngrx/store';
 import { mapReducers } from './reducers';  //, mapStructReducers
 import { actions } from '../actions';
 import { pairs as foos } from '../actions/foo';
-let { UPDATE_LOCATION } = fromRouter.routerActions;
+// let { UPDATE_LOCATION } = fromRouter.routerActions;
 
 // store: db, reducers: tables, selectors: queries
 const REDUCERS = {
   // foo: require('./foo'),
 };
 
-type StateNav = string;
-type StateHouses = House[];
-// type StateDevices = Obj<Device>;
+export type StateNav = string;
+export type StateHouses = House[];
+export type StateProjects = {}[];
+export type StateDevices = Obj<Device>;
 
 export interface State {
   // router: fromRouter.RouterState;
@@ -38,17 +42,17 @@ export interface State {
 //   router: fromRouter.routerReducer,
 // });
 let reducers = mapReducers({
-  hideNav: [{
-    [UPDATE_LOCATION]: (state: StateNav, doHide: boolean) => doHide ? 'none' : 'inherit',
-  }, 'inherit'],
+  // hideNav: [{
+  //   [UPDATE_LOCATION]: (state: StateNav, doHide: boolean) => doHide ? 'none' : 'inherit',
+  // }, 'inherit'],
   projects: [{
-    [actions.projects.types.SEARCH_COMPLETE]: (state: StateProjects, { payload }) => payload, // did just putting payload still fail?
+    [actions.projects.types.SEARCH_COMPLETE]: (state: StateProjects, { payload }: Action) => payload, // did just putting payload still fail?
   }, []],
   houses: [{
-    [actions.houses.types.SEARCH_COMPLETE]: (state: StateHouses, { payload }) => payload,
+    [actions.houses.types.SEARCH_COMPLETE]: (state: StateHouses, { payload }: Action) => payload,
   }, []],
   devices: [{
-    [actions.devices.types.OVERVIEW_COMPLETE]: (state: StateDevices, { payload }) => R.assoc('0', payload, state), // where to get id??
+    [actions.devices.types.OVERVIEW_COMPLETE]: (state: StateDevices, { payload }: Action) => R.assoc('0', payload, state), // where to get id??
   }, {}],
 
   // alternative, using tuples with pairs/payloads rather than object. May require `mapReducers` / `reducerStructFn` variants if deemed useful.

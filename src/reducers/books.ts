@@ -1,7 +1,8 @@
 import * as R from 'ramda';
 import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
-import { Book } from '../models/models';
+// import { Book } from '../models/models';
+export type Book = { id: string };
 import { ActionTypes as bookActions } from '../actions/book';
 import { ActionTypes as collActions } from '../actions/collection';
 let { SEARCH_COMPLETE, LOAD, SELECT } = bookActions;
@@ -20,7 +21,7 @@ export const initialState: State = {
 };
 
 // T[] -> { [k]: T }, by a certain property as key
-let byProp = (k: string) => R.pipe(R.map(<T>(v: T) => [R.prop(k)(v), v]), R.fromPairs);
+let byProp = (k: string) => R.pipe(R.map(<T>(v: T) => [R.prop(k, v), v]), R.fromPairs);
 // (state, action: book.Actions | collection.Actions): State
 
 let mergeBooks = (state: State, books: Book[]) => {
@@ -53,6 +54,10 @@ export let reducers = {
   }),
 }
 
+let getBookEntities = R.map(R.prop('entities'));
+let getBookIds = R.map(R.prop('ids'));
+let getSelectedBookId = R.map(R.prop('selectedBookId'));
+
 export let selectors = {
   selectedBook(state$: Observable<State>) {
     return combineLatest<{ [id: string]: Book }, string>(
@@ -68,7 +73,4 @@ export let selectors = {
     )
     .map(([ entities, ids ]) => ids.map(id => entities[id]));
   },
-  // getBookEntities: R.map(s => s.entities),
-  // getBookIds: R.map(s => s.ids),
-  // getSelectedBookId: R.map(s => s.selectedBookId),
 };

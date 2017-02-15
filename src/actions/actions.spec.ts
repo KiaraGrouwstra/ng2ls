@@ -1,6 +1,8 @@
 // import * as R from 'ramda';
 import { makeAction, actionFactory, effectfulAction, mapSyncActions, mapAsyncActions } from './actions';
 import { pojofy } from '../util';
+import { Action } from '@ngrx/store';
+import { Type } from '../models/models';
 let FOO = 'foo';
 let fixt = { type: '[book] create', payload: FOO };
 let checkAction = (a: any, b: any) => expect(pojofy(a)).toEqual(pojofy(b));
@@ -17,14 +19,14 @@ describe('makeAction', () => {
 
 describe('actionFactory', () => {
   it('should create actions in batch', () => {
-    let cls = actionFactory('book', ['create']).actions.create;
+    let cls = actionFactory('book', ['create']).actions['create'];
     checkAction(new cls(FOO), fixt);
   });
 });
 
 describe('mapSyncActions', () => {
   it('should create actions in batch', () => {
-    let cls = mapSyncActions({ book: ['create'] }).book.create;
+    let cls: Type<Action> = mapSyncActions({ book: ['create'] })['book']['create'];
     checkAction(new cls(FOO), fixt);
   });
 });
@@ -32,7 +34,7 @@ describe('mapSyncActions', () => {
 describe('mapAsyncActions', () => {
   it('should create actions in batch', () => {
     // let cls = mapActions({ book: ['create'] }).book.create;
-    let cls = mapAsyncActions({ book: ['create'] }).book.actions.create;
+    let cls = mapAsyncActions({ book: ['create'] })['book'].actions['create'];
     checkAction(new cls(FOO), fixt);
   });
 });

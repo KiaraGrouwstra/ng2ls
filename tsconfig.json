@@ -13,7 +13,7 @@
     "strictNullChecks": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "lib": ["es2016", "dom"],
+    "lib": ["es2016", "dom", "es2015.reflect"],
     "target": "es5",
     "skipLibCheck": true,
     "types": [

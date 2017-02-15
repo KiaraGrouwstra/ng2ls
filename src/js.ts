@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 let $ = require('jquery');
-import { Component } from '@angular/core';
+import { Component, OpaqueToken } from '@angular/core';
 import { ValidatorFn, FormBuilder, FormControl, FormArray, FormGroup, AbstractControl } from '@angular/forms';
-import { Maybe } from 'sanctuary';
+// import { Maybe } from 'sanctuary';
 // let CryptoJS = require('crypto-js');
 import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, StringLike, Fn } from './types';
 
@@ -10,7 +10,15 @@ require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
 
 // make an object from an array with mapper function
-export let arr2obj = <T>(fn: (s: StringLike) => T) => <T>(arr: StringLike[]): Obj<T> => R.pipe(R.map((k: StringLike) => [k, fn(k)]), R.fromPairs);
+export let arr2obj = <T>(fn: (s: StringLike) => T) => (arr: StringLike[]): Obj<T> =>
+    R.pipe(
+      // Ramda issue... doesn't know what will go in so somehow decides on the last option, functor, while I need the first option, list
+      // <(list: ArrayLike<StringLike>) => [string, T][]>
+      // <[string, T][]>
+      // R.map((k: StringLike): [string, T] => [k.toString(), fn(k)]),
+      (list: StringLike[]): [string, T][] => list.map((k: StringLike): [string, T] => [k.toString(), fn(k)]),
+      R.fromPairs
+    )(arr);
 
 // make a Map from an array with mapper function
 export function arr2map<T,U>(arr: Array<T>, fn: (v: T) => U): Map<T,U> {
@@ -26,13 +34,13 @@ export function doReturn<T>(fn: (v: T) => void): (v: T) => T {
 }
 
 // return the hash or get parts of a Location as an object
-function urlBit(url: Location, part: string): Object {
+function urlBit(url: Obj<string>, part: string): Obj<string> {  // : Location
   let par_str = (<string> url[part]).substring(1);
   return fromQuery(par_str);
 }
 
 // convert a GET query string (part after `?`) to an object
-export function fromQuery(str: string): Object {
+export function fromQuery(str: string): Obj<string> {
   let params = decodeURIComponent(str).split('&');
   return R.fromPairs(params.map((s: string) => <[string, string]> s.split('=')));
 }
@@ -105,15 +113,15 @@ export function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
 
 // create a Component, decorating the class with the provided metadata
 // export let FooComp = ng2comp({ component: {}, parameters: [], decorators: {}, class: class FooComp {} })
-export function ng2comp<TComp extends Type<any>>(o: { component?: {}, parameters?: Array<void>, decorators?: {}, class: TComp }): TComp {
+export function ng2comp<TComp extends Type<any>>(o: { component?: Component, parameters?: Array<OpaqueToken | never /*?*/>, decorators?: Obj<ClassDecorator>, class: TComp }): TComp {
   let { component = {}, parameters = [], decorators = {}, class: cls } = o;
-  cls['annotations'] = [new Component(component)];
-  cls['parameters'] = parameters.map(x => x._desc ? x : [x]);
   R.keys(decorators).forEach((k: string) => {
     Reflect.decorate([decorators[k]], cls.prototype, k);
   });
-  // return Component(component)(cls);
-  return cls;
+  return Object.assign(cls, {
+    annotations: [new Component(component)],
+    parameters: parameters.map(x => x instanceof OpaqueToken ? x : [x]),
+  });
 };
 
 // find the index of an item within a Set (indicating in what order the item was added).
@@ -124,7 +132,7 @@ export function findIndexSet<T>(x: any, set: Set<T>): number {
 // editVals from elins; map values of an object using a mapper
 
 // only keep properties in original object
-export let editValsOriginal: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) => R.mapObjIndexed(<T>(v: T, k: string) => {
+export let editValsOriginal: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Obj<any>) => R.mapObjIndexed(<T>(v: T, k: string) => {
   let fn = fnObj[k];
   return fn ? fn(v) : v
 })(obj));
@@ -132,11 +140,11 @@ export let editValsOriginal: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: 
 // export let editVals = (fnObj) => (obj) => R.reduce((acc, fn, k) => _.update(k, fn(acc[k]))(acc), obj)(fnObj);
 // ^ no k in FP
 // keep all original properties, map even over keys not in the original object
-export let editValsBoth: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) =>
+export let editValsBoth: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Obj<any>) =>
     R.keys(fnObj).reduce((acc, k: string) => R.assoc(k, fnObj[k])(acc), obj));
 
 // only keep properties in mapper object, map even over keys not in the original object
-export let editValsLambda: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Object) => R.mapObjIndexed((fn: Function, k: string) => {
+export let editValsLambda: ObjectMapper = R.curry((fnObj: Obj<Function>, obj: Obj<any>) => R.mapObjIndexed((fn: Function, k: string) => {
   let v = obj[k];
   return fn ? fn(v) : v
 })(fnObj));
@@ -231,18 +239,27 @@ export function editCtrl(fb: FormBuilder, val: any, vldtr: ValidatorStruct): Abs
 }
 // ^ still UNUSED, but needed to load in existing values to edit!
 
-export let mapNestedBoth = <T,U>(f: (v: NestedBoth<T>, path: Path) => U, v: T, path: Prop[] = []): NestedBoth<U> =>
-  R.is(Array)(v) ? (<Array> v).map((x: any, i: number) => mapNestedBoth(x, path.concat(i))) :
-  R.is(Object)(v) ? R.mapObjIndexed((x: any, k: string) => mapNestedBoth(x, path.concat(k))) :
-  f(v, path);
+type _mapNestedFn<T,U> = (v: T, path: Path) => U;
 
-export let mapNestedArr = <T,U>(f: (v: NestedArr<T>|T, path: Path) => U, v: T, path: Prop[] = []): NestedArr<U> =>
-  R.is(Array)(v) ? (<NestedArr<T>> v).map((x: any, i: number) => mapNestedArr(f, x, path.concat(i))) :
-  f(<T>v, path);
+/**
+ * map the contents of a nested yet otherwise homogeneous array (e.g. [1, [[2], 3]])
+ */
+export let mapNestedArr = <T,U>(f: _mapNestedFn<T,U>, v: NestedArr<T>, path: Prop[] = []): NestedArr<U> => v.map((x: T|NestedArr<T>, i: number) =>
+    mapNestedArr_(f, x, path.concat(i)));
+let mapNestedArr_ = <T,U>(f: _mapNestedFn<T,U>, v: NestedArr<T>|T, path: Prop[] = []): NestedArr<U>|U =>
+    R.is(Array)(v) ? (<NestedArr<T>> v).map((x: T|NestedArr<T>, i: number) => mapNestedArr_(f, x, path.concat(i))) :
+    f(<T>v, path);
 
-export let mapNestedObject = <T,U>(f: (v: NestedObj<T>, path: Path) => U, v: T, path: Prop[] = []): NestedObj<U> =>
-  R.is(Object)(v) ? R.mapObjIndexed((x: any, k: string) => mapNestedObject(f, x, path.concat(k))) :
-  f(v, path);
+/**
+ * map the contents of a nested yet otherwise homogeneous object (e.g. { a: 1, z: { y: { b: 2 }, c: 3 } })
+ */
+export let mapNestedObj = <T,U>(f: _mapNestedFn<T,U>, v: NestedObj<T>, path: Prop[] = []): NestedObj<U> =>
+    R.mapObjIndexed((x: T|NestedObj<T>, k: string) => mapNestedObj_(f, x, path.concat(k)))(v);
+let mapNestedObj_ = <T,U>(f: _mapNestedFn<T,U>, v: NestedObj<T>|T, path: Prop[] = []): NestedObj<U>|U =>
+    R.is(Object)(v) ? R.mapObjIndexed((x: T|NestedObj<T>, k: string) => mapNestedObj_(f, x, path.concat(k)))(<NestedObj<T>> v) :
+    f(<T>v, path);
+
+// export let mapNestedBoth = ...
 
 export let falsy = R.either(R.isEmpty, R.isNil);
 export let truthy = R.complement(falsy); // differs from JS's 'truthy': []/{} -> false.

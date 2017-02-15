@@ -18,7 +18,7 @@ function reducerFnTuple(types, initialState) {
 exports.reducerFnTuple = reducerFnTuple;
 // make a reducer with some optimizations based on what reducer parameters are actually used
 exports.reducerStructFn = function (struct, initialState) {
-    var fixed = struct.fixed, set = struct.set, update = struct.update, edit = struct.edit, misc = struct.misc;
+    var _a = struct.fixed, fixed = _a === void 0 ? {} : _a, _b = struct.set, set = _b === void 0 ? {} : _b, _c = struct.update, update = _c === void 0 ? {} : _c, _d = struct.edit, edit = _d === void 0 ? {} : _d, _e = struct.misc, misc = _e === void 0 ? {} : _e;
     var reducer = R.mergeAll([
         R.map(function (v) { return function (state, payload) { return v; }; })(fixed),
         R.map(function (fn) { return function (state, payload) { return fn(payload); }; })(set),

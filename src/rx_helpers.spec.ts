@@ -14,7 +14,7 @@ let fail = (e: string) => alert(e);
 
 describe('Rx Helpers', () => {
 
-  let do_obs = <T>(done: () => void, obs: Observable<T>, test: Function, not_done = false) => obs.subscribe(not_done ? R.pipe(test, done) : test, R.pipe(fail, done), done);
+  let do_obs = <T>(done: () => void, obs: Observable<T>, test: (v: any) => boolean, not_done = false) => obs.subscribe(not_done ? R.pipe(test, done) : test, R.pipe(fail, done), done);
   // let obs_it = (desc, obs, test) => it(desc, (done) => obs.subscribe(test, fail(done), done));
   let people = [{"id":1,"name":"Brad"},{"id":2,"name":"Jules"},{"id":3,"name":"Jeff"}];
   let keys = ["id","name"]; //R.keys(people);
@@ -57,7 +57,7 @@ describe('Rx Helpers', () => {
       .mergeMap((x,i) => x)
       .scan(elemToSet, new Set)
       .last()
-      .map(s => Array.from(s)),
+      .map(Array.from),
     (v: any) => expect(v).toEqual(keys)
   ))
 
@@ -66,7 +66,7 @@ describe('Rx Helpers', () => {
       .map(e => R.keys(e))
       .scan(arrToSet, new Set)
       .last()
-      .map(s => Array.from(s)),
+      .map(Array.from),
     (v: any) => expect(v).toEqual(keys)
   ))
 
@@ -75,7 +75,7 @@ describe('Rx Helpers', () => {
       .map(e => new Set(R.keys(e)))
       .scan(setToSet, new Set)
       .last()
-      .map(s => Array.from(s)),
+      .map(Array.from),
     (v: any) => expect(v).toEqual(keys)
   ))
 

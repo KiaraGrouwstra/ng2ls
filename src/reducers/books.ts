@@ -5,6 +5,7 @@ import { combineLatest } from 'rxjs/observable/combineLatest';
 export type Book = { id: string };
 import { ActionTypes as bookActions } from '../actions/book';
 import { ActionTypes as collActions } from '../actions/collection';
+import { combineSelectors } from '../reducers';
 let { SEARCH_COMPLETE, LOAD, SELECT } = bookActions;
 let { LOAD_SUCCESS } = collActions;
 
@@ -59,18 +60,27 @@ let getBookIds = R.map(R.prop('ids'));
 let getSelectedBookId = R.map(R.prop('selectedBookId'));
 
 export let selectors = {
-  selectedBook(state$: Observable<State>) {
-    return combineLatest<{ [id: string]: Book }, string>(
-      state$.let(getBookEntities),
-      state$.let(getSelectedBookId)
-    )
-    .map(([ entities, selectedBookId ]) => entities[selectedBookId])
-  },
-  allBooks(state$: Observable<State>) {
-    return combineLatest<{ [id: string]: Book }, string[]>(
-      state$.let(getBookEntities),
-      state$.let(getBookIds)
-    )
-    .map(([ entities, ids ]) => ids.map(id => entities[id]));
-  },
+  selectedBook: combineSelectors(
+    [getBookEntities, getSelectedBookId],
+    ([books, id]) => books[id]
+  ),
+  allBooks: combineSelectors(
+    [getBookEntities, getBookIds],
+    ([entities, ids]) => ids.map((id: string) => entities[id])
+  ),
+  // // works even without Ramda typings:
+  // selectedBook(state$: Observable<State>) {
+  //   return combineLatest<{ [id: string]: Book }, string>(
+  //     state$.let(getBookEntities),
+  //     state$.let(getSelectedBookId)
+  //   )
+  //   .map(([ entities, selectedBookId ]) => entities[selectedBookId])
+  // },
+  // allBooks(state$: Observable<State>) {
+  //   return combineLatest<{ [id: string]: Book }, string[]>(
+  //     state$.let(getBookEntities),
+  //     state$.let(getBookIds)
+  //   )
+  //   .map(([ entities, ids ]) => ids.map(id => entities[id]));
+  // },
 };

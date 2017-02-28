@@ -261,7 +261,7 @@ let mapNestedObj_ = <T,U>(f: _mapNestedFn<T,U>, v: NestedObj<T>|T, path: Prop[] 
 
 // export let mapNestedBoth = ...
 
-export let falsy = R.either(R.isEmpty, R.isNil);
+export let falsy = R.either(R.isEmpty, R.not);
 export let truthy = R.complement(falsy); // differs from JS's 'truthy': []/{} -> false.
 
 // look up the property corresponding to a string in a lookup object

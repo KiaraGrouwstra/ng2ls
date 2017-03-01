@@ -8,6 +8,32 @@ const genFn = (hasError, hasFail, hasComplete) => `
 
 type Reducer<T> = (State, T) => State;
 
+let obj = {
+  foos: { // State: number
+    init: 0,
+    reducers: {
+      add: R.add,
+    },
+    selectors: {
+      id: R.map(R.identity),
+    },
+    effects: {
+      log: {
+        init: 0,
+        debounce: 0,
+        isRead: false,
+        complete: (state, pl) => state + pl,
+        fn: (pl: number) => ({
+          obs: Observable.from([0]),
+          complete: (state, pl) => state + pl,
+          fail: (state, pl) => state + pl,
+        }),
+        fail: (state, pl) => state + pl,
+      },
+    },
+  },
+};
+
 export interface NgrxStruct {
   domains: Obj<
     <State>{

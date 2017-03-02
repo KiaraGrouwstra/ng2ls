@@ -11,7 +11,7 @@ type Reducer<T> = (State, T) => State;
 # trick to type `R.map(f, { a: b })`: use codegen to write let obj = `(f) => ({ a: f(b) })`, then use with `obj(f)`
 
 let obj = {
-  foos: { // State: number
+  foos: <number>() => ({ // State
     init: 0,
     reducers: {
       add: R.add,
@@ -33,7 +33,7 @@ let obj = {
         fail: (state, pl) => state + pl,
       },
     },
-  },
+  }),
 };
 
 export interface NgrxStruct {

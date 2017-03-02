@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var core_1 = require("@angular/core");
+var R = require('ramda');
+var core_1 = require('@angular/core');
 /**
  * generate a pipe class for a given function and metadata
  */

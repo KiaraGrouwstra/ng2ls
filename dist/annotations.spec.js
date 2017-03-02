@@ -13,53 +13,53 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var annotations_1 = require("./annotations");
-var core_1 = require("@angular/core");
-var reflect_metadata_1 = require("reflect-metadata"); // /Reflect
+var annotations_1 = require('./annotations');
+var core_1 = require('@angular/core');
+// import { Reflect, getMetadata } from 'reflect-metadata'; // /Reflect
 var OnPush = core_1.ChangeDetectionStrategy.OnPush, Default = core_1.ChangeDetectionStrategy.Default;
 var XComp = (function () {
     function XComp() {
         this.n = 1;
     }
+    __decorate([
+        core_1.Input(), 
+        __metadata('design:type', String)
+    ], XComp.prototype, "inp", void 0);
+    XComp = __decorate([
+        core_1.Component({
+            changeDetection: Default,
+        }), 
+        __metadata('design:paramtypes', [])
+    ], XComp);
     return XComp;
 }());
-__decorate([
-    core_1.Input(),
-    __metadata("design:type", String)
-], XComp.prototype, "inp", void 0);
-XComp = __decorate([
-    core_1.Component({
-        changeDetection: Default,
-    }),
-    __metadata("design:paramtypes", [])
-], XComp);
 var AComp = (function (_super) {
     __extends(AComp, _super);
     function AComp() {
-        return _super.apply(this, arguments) || this;
+        _super.apply(this, arguments);
     }
+    AComp = __decorate([
+        annotations_1.ExtComp({
+            changeDetection: Default,
+        }), 
+        __metadata('design:paramtypes', [])
+    ], AComp);
     return AComp;
 }(XComp));
-AComp = __decorate([
-    annotations_1.ExtComp({
-        changeDetection: Default,
-    }),
-    __metadata("design:paramtypes", [])
-], AComp);
 var BComp = (function (_super) {
     __extends(BComp, _super);
     function BComp() {
-        return _super.apply(this, arguments) || this;
+        _super.apply(this, arguments);
     }
+    BComp = __decorate([
+        annotations_1.ExtComp({
+            changeDetection: OnPush,
+        }), 
+        __metadata('design:paramtypes', [])
+    ], BComp);
     return BComp;
 }(AComp));
-BComp = __decorate([
-    annotations_1.ExtComp({
-        changeDetection: OnPush,
-    }),
-    __metadata("design:paramtypes", [])
-], BComp);
-var comp_meta = function (cls) { return reflect_metadata_1.Reflect.getMetadata('annotations', cls)[0]; };
+var comp_meta = function (cls) { return Reflect.getMetadata('annotations', cls)[0]; };
 var meta_x = comp_meta(XComp);
 var meta_a = comp_meta(AComp);
 var meta_b = comp_meta(BComp);
@@ -73,9 +73,9 @@ describe('extends', function () {
         expect(comp_b.n).toEqual(1);
     });
     it('should inherit `@Input`s', function () {
-        expect(reflect_metadata_1.Reflect.getMetadata('propMetadata', XComp)['inp'][0].constructor).toEqual(core_1.Input);
-        expect(reflect_metadata_1.Reflect.getMetadata('propMetadata', AComp)['inp'][0].constructor).toEqual(core_1.Input);
-        expect(reflect_metadata_1.Reflect.getMetadata('propMetadata', BComp)['inp'][0].constructor).toEqual(core_1.Input);
+        expect(Reflect.getMetadata('propMetadata', XComp)['inp'][0].constructor).toEqual(core_1.Input);
+        expect(Reflect.getMetadata('propMetadata', AComp)['inp'][0].constructor).toEqual(core_1.Input);
+        expect(Reflect.getMetadata('propMetadata', BComp)['inp'][0].constructor).toEqual(core_1.Input);
     });
 });
 describe('ExtComp', function () {

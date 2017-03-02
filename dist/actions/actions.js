@@ -1,13 +1,13 @@
 "use strict";
-var R = require("ramda");
-var util_1 = require("../util");
+var R = require('ramda');
+var util_1 = require('../util');
 ;
 exports.toPayload = function (action) { return action.payload; };
 // create an action type string
-exports.actionTp = R.curry(function (typeName, action) { return "[" + typeName + "] " + action; }); // type()
+exports.actionTp = R.curry(function (typeName, action) { return ("[" + typeName + "] " + action); }); // type()
 // create the Complete string for an action
 var derivedAction = R.map(function (tp) {
-    return function (action) { return action + "_" + tp; };
+    return function (action) { return (action + "_" + tp); };
 })({
     complete: 'Complete',
     fail: 'Failed',

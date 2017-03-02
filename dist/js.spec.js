@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var js_1 = require("./js");
+var R = require('ramda');
+var js_1 = require('./js');
 describe('js', function () {
     var fail = function (e) { return expect(e).toBeUndefined(); };
     var do_prom = function (done, prom, test) { return prom.then(test, fail).then(done, done); };

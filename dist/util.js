@@ -1,6 +1,5 @@
 "use strict";
-var R = require("ramda");
-var jQuery = require("jquery");
+var R = require('ramda');
 // coerces an action label string into a string literal, enabling typechecking (TS2.0 tagged union types), and ensuring uniqueness
 var typeCache = {};
 function type(label) {
@@ -21,7 +20,8 @@ exports.trace = R.curry(function (tag, x) {
     console.log(tag, x);
     return x;
 });
-exports.toQuery = jQuery.param;
+// export let toQuery = jQuery.param;
+exports.toQuery = R.pipe(R.toPairs, R.map(R.join('=')), R.join('&'));
 // create a url with query params from an object
 function makeUrl(url, pars) {
     if (pars === void 0) { pars = {}; }

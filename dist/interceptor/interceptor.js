@@ -13,25 +13,24 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require("@angular/core");
-var store_1 = require("@ngrx/store");
-var rxjs_1 = require("rxjs");
-require("rxjs/operator/withLatestFrom");
-require("rxjs/operator/switchMap");
+var core_1 = require('@angular/core');
+var store_1 = require('@ngrx/store');
+var rxjs_1 = require('rxjs');
+require('rxjs/operator/withLatestFrom');
+require('rxjs/operator/switchMap');
 var Interceptor = (function (_super) {
     __extends(Interceptor, _super);
     function Interceptor(_store, _dispatcher, _interceptor) {
-        var _this = _super.call(this) || this;
-        _this._store = _store;
-        _this._dispatcher = _dispatcher;
-        _this._interceptor = _interceptor;
-        _this.withLatestFrom(_store)
+        _super.call(this);
+        this._store = _store;
+        this._dispatcher = _dispatcher;
+        this._interceptor = _interceptor;
+        this.withLatestFrom(_store)
             .switchMap(function (_a) {
             var action = _a[0], store = _a[1];
             return _interceptor.intercept(store, action);
         })
             .subscribe(_dispatcher);
-        return _this;
     }
     Interceptor.prototype.dispatch = function (action) {
         this.next(action);
@@ -43,12 +42,12 @@ function _interceptorFactory(store, dispatcher, interception) {
     return new Interceptor(store, dispatcher, interception);
 }
 exports._interceptorFactory = _interceptorFactory;
-var InterceptModule = InterceptModule_1 = (function () {
+var InterceptModule = (function () {
     function InterceptModule() {
     }
     InterceptModule.provideInterceptor = function (type) {
         return {
-            ngModule: InterceptModule_1,
+            ngModule: InterceptModule,
             providers: [
                 type,
                 {
@@ -59,11 +58,10 @@ var InterceptModule = InterceptModule_1 = (function () {
             ]
         };
     };
+    InterceptModule = __decorate([
+        core_1.NgModule(), 
+        __metadata('design:paramtypes', [])
+    ], InterceptModule);
     return InterceptModule;
 }());
-InterceptModule = InterceptModule_1 = __decorate([
-    core_1.NgModule(),
-    __metadata("design:paramtypes", [])
-], InterceptModule);
 exports.InterceptModule = InterceptModule;
-var InterceptModule_1;

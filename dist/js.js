@@ -4,9 +4,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-var R = require("ramda");
+var R = require('ramda');
 var $ = require('jquery');
-var core_1 = require("@angular/core");
+var core_1 = require('@angular/core');
 require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
 // make an object from an array with mapper function
@@ -157,7 +157,8 @@ exports.evalExpr = function (context, vars) {
     if (vars === void 0) { vars = {}; }
     return function (expr) {
         var varArr = [context, vars];
-        var propObj = Object.assign.apply(Object, [{}].concat(varArr.concat(varArr.map(function (x) { return Object.getPrototypeOf(x); })).map(function (x) { return exports.arr2obj(function (k) { return x[k.toString()]; })(Object.getOwnPropertyNames(x)); })));
+        var propObj = Object.assign.apply(Object, [{}].concat(varArr.concat(varArr.map(function (x) { return Object.getPrototypeOf(x); }))
+            .map(function (x) { return exports.arr2obj(function (k) { return x[k.toString()]; })(Object.getOwnPropertyNames(x)); })));
         var _a = splitObj(propObj), keys = _a[0], vals = _a[1];
         var fn = Function.apply(context, keys.concat("return " + expr));
         return fn.apply(context, vals);
@@ -182,16 +183,15 @@ exports.transformWhile = transformWhile;
 var ExtendableError = (function (_super) {
     __extends(ExtendableError, _super);
     function ExtendableError(message) {
-        var _this = _super.call(this, message) || this;
-        _this.name = _this.constructor.name;
-        _this.message = message;
+        _super.call(this, message);
+        this.name = this.constructor.name;
+        this.message = message;
         if (typeof Error.captureStackTrace === 'function') {
-            Error.captureStackTrace(_this, _this.constructor);
+            Error.captureStackTrace(this, this.constructor);
         }
         else {
-            _this.stack = (new Error(message)).stack;
+            this.stack = (new Error(message)).stack;
         }
-        return _this;
     }
     return ExtendableError;
 }(Error));
@@ -276,7 +276,7 @@ var mapNestedObj_ = function (f, v, path) {
         f(v, path);
 };
 // export let mapNestedBoth = ...
-exports.falsy = R.either(R.isEmpty, R.isNil);
+exports.falsy = R.either(R.isEmpty, R.not);
 exports.truthy = R.complement(exports.falsy); // differs from JS's 'truthy': []/{} -> false.
 // look up the property corresponding to a string in a lookup object
 exports.lookup = R.flip(R.prop);

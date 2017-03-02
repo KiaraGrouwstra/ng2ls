@@ -1,14 +1,14 @@
 "use strict";
-var rx_helpers_1 = require("./rx_helpers"); //, emitter
-var rxjs_1 = require("rxjs");
-require("rxjs/add/operator/map");
-require("rxjs/add/operator/scan");
-require("rxjs/add/operator/mergeMap");
-require("rxjs/add/operator/toArray");
-require("rxjs/add/operator/last");
-require("rxjs/add/operator/startWith");
-require("rxjs/add/observable/from");
-var R = require("ramda");
+var rx_helpers_1 = require('./rx_helpers'); //, emitter
+var rxjs_1 = require('rxjs');
+require('rxjs/add/operator/map');
+require('rxjs/add/operator/scan');
+require('rxjs/add/operator/mergeMap');
+require('rxjs/add/operator/toArray');
+require('rxjs/add/operator/last');
+require('rxjs/add/operator/startWith');
+require('rxjs/add/observable/from');
+var R = require('ramda');
 // // let test = (obs, val, txt) => obs.subscribe(e => console.log(JSON.stringify(e) == JSON.stringify(val), txt, JSON.stringify(e)));
 // let rxit = require('jasmine-rx').rxit;
 var fail = function (e) { return alert(e); };
@@ -36,17 +36,17 @@ describe('Rx Helpers', function () {
         .mergeMap(function (x, i) { return x; })
         .scan(rx_helpers_1.elemToSet, new Set)
         .last()
-        .map(function (s) { return Array.from(s); }), function (v) { return expect(v).toEqual(keys); }); });
+        .map(Array.from), function (v) { return expect(v).toEqual(keys); }); });
     it('arrToSet gradually merges arrays into a set', function (d) { return do_obs(d, flat
         .map(function (e) { return R.keys(e); })
         .scan(rx_helpers_1.arrToSet, new Set)
         .last()
-        .map(function (s) { return Array.from(s); }), function (v) { return expect(v).toEqual(keys); }); });
+        .map(Array.from), function (v) { return expect(v).toEqual(keys); }); });
     it('setToSet gradually merges sets into a set', function (d) { return do_obs(d, flat
         .map(function (e) { return new Set(R.keys(e)); })
         .scan(rx_helpers_1.setToSet, new Set)
         .last()
-        .map(function (s) { return Array.from(s); }), function (v) { return expect(v).toEqual(keys); }); });
+        .map(Array.from), function (v) { return expect(v).toEqual(keys); }); });
     it('combLastObs combines the latest values from multiple Observables for use in one', function (d) { return do_obs(d, rx_helpers_1.combLastObs([1, 2, 3].map(function (v) { return new rxjs_1.BehaviorSubject(v); })), function (r) { return expect(r).toEqual([1, 2, 3]); }, true); });
     it('mapComb maps the latest values of a set of Observables to a lambda', function (d) { return do_obs(d, rx_helpers_1.mapComb(['foo', 'bar'].map(function (v) { return new rxjs_1.BehaviorSubject(v); }), function (foo, bar) { return foo + bar; }), function (r) { return expect(r).toEqual('foobar'); }, true); });
     // it('emitter makes an ng2 EventEmitter (wrapped Rx Subject) with an initial value', (d) => do_obs(d,

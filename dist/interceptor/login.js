@@ -8,29 +8,28 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require("@angular/core");
-var http_1 = require("@angular/http");
-var rxjs_1 = require("rxjs");
-var action_1 = require("./action");
-var R = require("ramda");
-var util_1 = require("./util");
-var home_1 = require("../pages/home/home");
-var login_1 = require("../pages/login/login");
+var core_1 = require('@angular/core');
+var http_1 = require('@angular/http');
+var rxjs_1 = require('rxjs');
+var actions_1 = require('../actions/actions');
+var R = require('ramda');
+var util_1 = require('../util');
+var pages_1 = require('../pages');
 var Interceptor = (function () {
     function Interceptor(http) {
         this.http = http;
         this.intercept = R.cond([
             [
-                util_1.typeIn([action_1.ACTION.INIT]),
+                util_1.typeIn([actions_1.ACTION.INIT]),
                 function (state, act) { return rxjs_1.Observable.of(util_1.toAction(act.type, {
                     loginForm: { email: 'hon@hon.com', password: 'xxx' },
-                    rootScene: login_1.LoginScene,
+                    rootView: pages_1.LoginView,
                     loginSeg: 'login'
                 })); }
             ],
             [
-                util_1.typeIn([action_1.ACTION.LOGIN]),
-                function (state, act) { return rxjs_1.Observable.merge(rxjs_1.Observable.of(util_1.toAction(action_1.ACTION.LOADING, { content: 'login...' })), rxjs_1.Observable.of(util_1.toAction(act.type, { user: { name: 'xon', uid: Date.now() } }), util_1.toAction(action_1.ACTION.LOADING, false), util_1.toAction(action_1.ACTION.SETROOT, { rootScene: home_1.HomePage })).delay(2200)); }
+                util_1.typeIn([actions_1.ACTION.LOGIN]),
+                function (state, act) { return rxjs_1.Observable.merge(rxjs_1.Observable.of(util_1.toAction(actions_1.ACTION.LOADING, { content: 'login...' })), rxjs_1.Observable.of(util_1.toAction(act.type, { user: { name: 'xon', uid: Date.now() } }), util_1.toAction(actions_1.ACTION.LOADING, false), util_1.toAction(actions_1.ACTION.SETROOT, { rootScene: HomePage })).delay(2200)); }
             ],
             [
                 R.T,
@@ -38,12 +37,12 @@ var Interceptor = (function () {
             ]
         ]);
     }
+    Interceptor = __decorate([
+        core_1.Injectable(), 
+        __metadata('design:paramtypes', [http_1.Http])
+    ], Interceptor);
     return Interceptor;
 }());
-Interceptor = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], Interceptor);
 exports.Interceptor = Interceptor;
 /*
 Usage:

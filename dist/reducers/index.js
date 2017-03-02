@@ -1,15 +1,16 @@
 "use strict";
-var R = require("ramda");
+var R = require('ramda');
+var combineLatest_1 = require('rxjs/observable/combineLatest');
 // import { environment } from '../../environments/environment';
 var environment = { production: false };
 // import { compose } from '@ngrx/core';
 // protect state from mutation (-> error)
-var ngrx_store_freeze_1 = require("ngrx-store-freeze");
+var ngrx_store_freeze_1 = require('ngrx-store-freeze');
 // Object<ReducerFn> -> ReducerFn<Object<ReducerFn>>
-var store_1 = require("@ngrx/store");
-var reducers_1 = require("./reducers"); //, mapStructReducers
-var actions_1 = require("../actions");
-var foo_1 = require("../actions/foo");
+var store_1 = require('@ngrx/store');
+var reducers_1 = require('./reducers'); //, mapStructReducers
+var actions_1 = require('../actions');
+var foo_1 = require('../actions/foo');
 // let { UPDATE_LOCATION } = fromRouter.routerActions;
 // store: db, reducers: tables, selectors: queries
 var REDUCERS = {};
@@ -27,19 +28,22 @@ var reducers = reducers_1.mapReducers({
                 var payload = _a.payload;
                 return payload;
             },
-            _a), []],
+            _a
+        ), []],
     houses: [(_b = {},
             _b[actions_1.actions.houses.types.SEARCH_COMPLETE] = function (state, _a) {
                 var payload = _a.payload;
                 return payload;
             },
-            _b), []],
+            _b
+        ), []],
     devices: [(_c = {},
             _c[actions_1.actions.devices.types.OVERVIEW_COMPLETE] = function (state, _a) {
                 var payload = _a.payload;
                 return R.assoc('0', payload, state);
             },
-            _c), {}],
+            _c
+        ), {}],
     // alternative, using tuples with pairs/payloads rather than object. May require `mapReducers` / `reducerStructFn` variants if deemed useful.
     foos: [[
             [foo_1.pairs.search, function (state, payload) { return payload; }],
@@ -49,51 +53,8 @@ var developmentReducer = R.pipe(store_1.combineReducers, ngrx_store_freeze_1.sto
 var productionReducer = store_1.combineReducers(reducers);
 exports.reducer = environment.production ? productionReducer : developmentReducer;
 var selectors = function (k) { return R.map(R.prop(k)); };
+exports.combineSelectors = function (selectors, fn) {
+    return function (state$) { return combineLatest_1.combineLatest /*<...Types>*/.apply(void 0, selectors.map(function (selector) { return state$.let(selector); })).map(fn); };
+};
 var _a, _b, _c;
-// selector to use on state in component constructor
-/**
- * ```ts
- * 	constructor(state$: Observable<State>) {
- * 	  this.booksState$ = getBooksState(state$);
- * 	}
- * ```
- */
-/*
-export let getBooksState = R.map(R.prop('books'));
-export let bookSelectors = R.map((sel) => R.pipe(getBooksState, sel))(REDUCERS.books.selectors); // selectors?
-
-export let getSearchState = R.map(s => s.search);
-export let searchSelectors = R.map((sel) => R.pipe(getSearchState, sel))(arr2obj(selectors)(R.keys(REDUCERS.search.initialState)));
-
-// // selector with join: array of books in store
-// export const getSearchResults = function (state$: Observable<State>) {
-//   return combineLatest<{ [id: string]: Book }, string[]>(
-//     state$.let(getBookEntities),
-//     state$.let(getSearchBookIds)
-//  )
-//   .map(([entities, ids]) => ids.map(id => entities[id]));
-// };
-
-export let getCollectionState = R.map(s => s.collection);
-export let collectionSelectors = R.map((sel) => R.pipe(getCollectionState, sel))(arr2obj(selectors)(R.keys(REDUCERS.collection.initialState)));
-
-// export const getBookCollection = function (state$: Observable<State>) {
-//   return combineLatest<{ [id: string]: Book }, string[]>(
-//     state$.let(getBookEntities),
-//     state$.let(getCollectionBookIds)
-//   )
-//   .map(([entities, ids]) => ids.map(id => entities[id]));
-// };
-
-// export const isSelectedBookInCollection = function (state$: Observable<State>) {
-//   return combineLatest<string[], Book>(
-//     state$.let(getCollectionBookIds),
-//     state$.let(getSelectedBook),
-//   )
-//   .map(([ids, selectedBook]) => ids.indexOf(selectedBook.id) > -1);
-// };
-
-// Layout Reducers
-export const getLayoutState = (state$: Observable<State>) => state$.select(R.prop('layout'));
-// export const getShowSidenav = R.pipe(fromLayout.getShowSidenav, getLayoutState);
-*/
+// ^ could simplify from array with R.apply(fn) if using ...params wouldn't error with "A rest parameter must be of an array type"

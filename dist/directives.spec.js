@@ -1,9 +1,9 @@
 "use strict";
-var R = require("ramda");
-var test_1 = require("./test");
-var directives_1 = require("./directives");
-var js_1 = require("./js");
-var core_1 = require("@angular/core");
+var R = require('ramda');
+var test_1 = require('./test');
+var directives_1 = require('./directives');
+var js_1 = require('./js');
+var core_1 = require('@angular/core');
 var TestComponent = (function () {
     // objExpr = {'foo': true, 'bar': false};
     // setExpr: Set<string> = new Set<string>();

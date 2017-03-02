@@ -1,4 +1,3 @@
-import * as R from 'ramda';
 import { Type, Obj, Action } from '../models/models';
 export interface MyAction<T> {
     type: string;
@@ -17,7 +16,7 @@ export declare type ActionPair<T> = {
     action: ActionCtor<T>;
 };
 export declare let toPayload: <T>(action: MyAction<T>) => T;
-export declare let actionTp: R.CurriedFunction2<string, string, string>;
+export declare let actionTp: any;
 export declare function makeAction<T>(typeName: string, actionName: string): ActionCtor<T>;
 export declare let make: {
     actions: (name: string, actions: string[]) => Obj<Type<Action>>;
@@ -27,6 +26,15 @@ export declare let actionFactory: (name: string, actions: string[]) => ActionInf
 export declare function effectfulAction(types: string[]): string[];
 export declare let mapSyncActions: (actionGroups: Obj<string[]>) => Obj<ActionInfo>;
 export declare let mapAsyncActions: (actionGroups: Obj<string[]>) => Obj<ActionInfo>;
-export declare let makeBoth: (name: string) => <T>(action: string) => ActionPair<T>;
-export declare let pairFactory: (name: string, actions: string[]) => ActionPair<any>[];
-export declare let pairObjFactory: (name: string, actions: string[]) => ActionPair<any>[];
+export declare let makeBoth: (name: string) => <T>(action: string) => {
+    type: string;
+    action: ActionCtor<T>;
+};
+export declare let pairFactory: (name: string, actions: string[]) => {
+    type: string;
+    action: ActionCtor<any>;
+}[];
+export declare let pairObjFactory: (name: string, actions: string[]) => {
+    type: string;
+    action: ActionCtor<any>;
+}[];

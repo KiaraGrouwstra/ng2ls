@@ -1,7 +1,7 @@
 "use strict";
-var R = require("ramda");
-var actions_1 = require("../actions/actions");
-var reducers_1 = require("./reducers");
+var R = require('ramda');
+var actions_1 = require('../actions/actions');
+var reducers_1 = require('./reducers');
 var cls = actions_1.makeAction('book', 'create');
 var action = new cls('foo');
 describe('reducerFn', function () {

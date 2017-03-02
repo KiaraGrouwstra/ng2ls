@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var js_1 = require("./js");
+var R = require('ramda');
+var js_1 = require('./js');
 var decorate = R.curry(Reflect.decorate);
 // decorate a class method (non get/set)
 // export let try_log: MethodDecorator = decorate(decMethod());
@@ -16,7 +16,8 @@ function decMethod(k, wrapper) {
                 // ...descriptor,
                 // ...R.omit(['value'], descriptor),
                 _a[k] = wrapper(fn, pars || [], { target: target, key: key, descriptor: descriptor }),
-                _a)];
+                _a
+            )];
         var _a;
     };
 }

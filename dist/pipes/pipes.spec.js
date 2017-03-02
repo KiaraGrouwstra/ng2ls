@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var pipes_1 = require("./pipes");
+var R = require('ramda');
+var pipes_1 = require('./pipes');
 var fn = function (s) { return s.toUpperCase(); };
 var toKv = R.pipe(R.toPairs, R.map(function (_a) {
     var k = _a[0], v = _a[1];

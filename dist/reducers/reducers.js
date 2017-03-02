@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var util_1 = require("../util");
+var R = require('ramda');
+var util_1 = require('../util');
 // pick the right reducer by action type, or default to the current state
 exports.reducerFn = function (types, initialState) {
     return function (state, action) {
@@ -12,7 +12,7 @@ function reducerFnTuple(types, initialState) {
     var obj = R.map(function (_a) {
         var _b = _a[0], type = _b.type, action = _b.action, reducerFn = _a[1];
         return [type, function (state, act) { return reducerFn(state, act.payload); }];
-    })(types);
+    }, types);
     return exports.reducerFn(obj, initialState);
 }
 exports.reducerFnTuple = reducerFnTuple;

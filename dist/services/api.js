@@ -13,15 +13,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require("@angular/core");
-var http_1 = require("@angular/http");
-var http_2 = require("@covalent/http");
+var core_1 = require('@angular/core');
+var http_1 = require('@angular/http');
+var http_2 = require('@covalent/http');
+// import { API_DOMAIN } from '../../constants';
+var API_DOMAIN = 'https://example.com/';
 var ApiService = (function (_super) {
     __extends(ApiService, _super);
     function ApiService(_http, 
         // private _tokenService: TokenService,
         path) {
-        var _this = _super.call(this, _http, {
+        _super.call(this, _http, {
             baseHeaders: new http_1.Headers({
                 'Content-Type': 'application/json',
             }),
@@ -31,29 +33,28 @@ var ApiService = (function (_super) {
             baseUrl: API_DOMAIN,
             path: "/api/" + path,
             transform: function (res) { return res.json(); },
-        }) || this;
-        _this._http = _http;
-        return _this;
+        });
+        this._http = _http;
     }
+    ApiService = __decorate([
+        core_1.Injectable(), 
+        __metadata('design:paramtypes', [http_1.Http, String])
+    ], ApiService);
     return ApiService;
 }(http_2.RESTService));
-ApiService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http, String])
-], ApiService);
 exports.ApiService = ApiService;
 // naive way of applying RESTService, must redo DI just to inject path
 var ProjectService = (function (_super) {
     __extends(ProjectService, _super);
     function ProjectService(_http) {
-        return _super.call(this, _http /*, _tokenService*/, 'projects') || this;
+        _super.call(this, _http /*, _tokenService*/, 'projects');
     }
+    ProjectService = __decorate([
+        core_1.Injectable(), 
+        __metadata('design:paramtypes', [http_1.Http])
+    ], ProjectService);
     return ProjectService;
 }(ApiService));
-ProjectService = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http])
-], ProjectService);
 exports.ProjectService = ProjectService;
 // // smarter approach, but still errors:
 // // Can't resolve all parameters for apiService: (?)

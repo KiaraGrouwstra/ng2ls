@@ -1,5 +1,7 @@
 import { Observable } from 'rxjs/Observable';
-import { Book } from '../models/models';
+export declare type Book = {
+    id: string;
+};
 export interface State {
     ids: string[];
     entities: {
@@ -9,27 +11,29 @@ export interface State {
 }
 export declare const initialState: State;
 export declare let reducers: {
-    [x: number]: ((state: State, books: any[]) => {
+    [x: number]: ((state: State, books: {
+        id: string;
+    }[]) => {
         ids: {}[];
         entities: any;
         selectedBookId: string | null;
-    }) | ((state: State, book: any) => {
-        ids: any[];
-        entities: {
-            [id: string]: any;
-        } & {
-            [x: number]: any;
-        };
+    }) | ((state: State, book: {
+        id: string;
+    }) => {
+        ids: string[];
+        entities: any;
         selectedBookId: string | null;
     }) | ((state: State, selectedBookId: number) => {
         ids: string[];
         entities: {
-            [id: string]: any;
+            [id: string]: {
+                id: string;
+            };
         };
         selectedBookId: number;
     });
 };
 export declare let selectors: {
-    selectedBook(state$: Observable<State>): Observable<any>;
-    allBooks(state$: Observable<State>): Observable<any[]>;
+    selectedBook: (state$: Observable<{}>) => Observable<any>;
+    allBooks: (state$: Observable<{}>) => Observable<any>;
 };

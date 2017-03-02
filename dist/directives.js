@@ -13,13 +13,13 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var R = require("ramda");
-var core_1 = require("@angular/core");
-var view_container_ref_1 = require("@angular/core/src/linker/view_container_ref");
-var dom_element_schema_registry_1 = require("@angular/compiler/src/schema/dom_element_schema_registry");
-var lang_1 = require("@angular/core/src/facade/lang");
-var js_1 = require("./js");
-var ng_for_1 = require("@angular/common/src/directives/ng_for");
+var R = require('ramda');
+var core_1 = require('@angular/core');
+var view_container_ref_1 = require('@angular/core/src/linker/view_container_ref');
+var dom_element_schema_registry_1 = require('@angular/compiler/src/schema/dom_element_schema_registry');
+var lang_1 = require('@angular/core/src/facade/lang');
+var js_1 = require('./js');
+var ng_for_1 = require('@angular/common/src/directives/ng_for');
 // export { ObjDirective };
 // // [HTML attribute vs. DOM property](https://angular.io/docs/ts/latest/guide/template-syntax.html#!#html-attribute-vs-dom-property)
 // // [HTML attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes)
@@ -137,15 +137,14 @@ var SetAttrs = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _registry) {
-        var _this = _super.call(this) || this;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
-        _this._registry = _registry;
+        _super.call(this);
+        this._elRef = _elRef;
+        this._renderer = _renderer;
+        this._registry = _registry;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // this
-        _this._elName = _this._el.tagName;
-        return _this;
+        this._elName = this._el.tagName;
     }
     SetAttrs.prototype._setItem = function (name, val) {
         var isProp = this._registry.hasProperty(this._elName, name, []);
@@ -171,18 +170,15 @@ var SetAttrs = (function (_super) {
             _this._setItem(record.key, ''); // null
         });
     };
+    SetAttrs = __decorate([
+        core_1.Directive({
+            selector: '[setAttrs]',
+            inputs: ['attributes: setAttrs'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, dom_element_schema_registry_1.DomElementSchemaRegistry])
+    ], SetAttrs);
     return SetAttrs;
 }(ObjDirective));
-SetAttrs = __decorate([
-    core_1.Directive({
-        selector: '[setAttrs]',
-        inputs: ['attributes: setAttrs'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        dom_element_schema_registry_1.DomElementSchemaRegistry])
-], SetAttrs);
 exports.SetAttrs = SetAttrs;
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
 function getContext(view /*ViewContainerRef*/) {
@@ -203,38 +199,33 @@ var DynamicAttrs = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _registry, _viewContainer) {
-        var _this = _super.call(this) || this;
-        _this._differs = _differs;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
-        _this._registry = _registry;
+        _super.call(this);
+        this._differs = _differs;
+        this._elRef = _elRef;
+        this._renderer = _renderer;
+        this._registry = _registry;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // DynamicDirective
-        _this._extra = {};
+        this._extra = {};
         // this
-        _this._context = getContext(_viewContainer);
-        _this._elName = _this._el.tagName;
-        return _this;
+        this._context = getContext(_viewContainer);
+        this._elName = this._el.tagName;
     }
     DynamicAttrs.prototype._setItem = function (name, evalStr) {
         var isProp = this._registry.hasProperty(this._elName, name, []);
         var val = js_1.evalExpr(this._context, this._extra)(evalStr);
         (isProp ? this._renderer.setElementProperty : this._renderer.setElementAttribute)(this._el, name, val);
     };
+    DynamicAttrs = __decorate([
+        core_1.Directive({
+            selector: '[dynamicAttrs]',
+            inputs: ['attributes: dynamicAttrs', 'extraVars: extraVars'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, dom_element_schema_registry_1.DomElementSchemaRegistry, view_container_ref_1.ViewContainerRef_])
+    ], DynamicAttrs);
     return DynamicAttrs;
 }(ObjDirective));
-DynamicAttrs = __decorate([
-    core_1.Directive({
-        selector: '[dynamicAttrs]',
-        inputs: ['attributes: dynamicAttrs', 'extraVars: extraVars'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        dom_element_schema_registry_1.DomElementSchemaRegistry,
-        view_container_ref_1.ViewContainerRef_])
-], DynamicAttrs);
 exports.DynamicAttrs = DynamicAttrs;
 var AppliesDirective = (function (_super) {
     __extends(AppliesDirective, _super);
@@ -243,19 +234,18 @@ var AppliesDirective = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _registry, _viewContainer) {
-        var _this = _super.call(this) || this;
-        _this._differs = _differs;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
-        _this._registry = _registry;
+        _super.call(this);
+        this._differs = _differs;
+        this._elRef = _elRef;
+        this._renderer = _renderer;
+        this._registry = _registry;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // DynamicDirective
-        _this._extra = {};
+        this._extra = {};
         // this
-        _this._context = getContext(_viewContainer);
-        _this._elName = _this._el.tagName;
-        return _this;
+        this._context = getContext(_viewContainer);
+        this._elName = this._el.tagName;
     }
     Object.defineProperty(AppliesDirective.prototype, "doesApply", {
         set: function (bool) {
@@ -264,19 +254,15 @@ var AppliesDirective = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    AppliesDirective = __decorate([
+        core_1.Directive({
+            selector: '[applies]',
+            inputs: ['doesApply: applies', 'extraVars: extraVars'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, dom_element_schema_registry_1.DomElementSchemaRegistry, view_container_ref_1.ViewContainerRef_])
+    ], AppliesDirective);
     return AppliesDirective;
 }(ObjDirective));
-AppliesDirective = __decorate([
-    core_1.Directive({
-        selector: '[applies]',
-        inputs: ['doesApply: applies', 'extraVars: extraVars'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        dom_element_schema_registry_1.DomElementSchemaRegistry,
-        view_container_ref_1.ViewContainerRef_])
-], AppliesDirective);
 exports.AppliesDirective = AppliesDirective;
 var AppliesExprDirective = (function (_super) {
     __extends(AppliesExprDirective, _super);
@@ -285,19 +271,18 @@ var AppliesExprDirective = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _registry, _viewContainer) {
-        var _this = _super.call(this) || this;
-        _this._differs = _differs;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
-        _this._registry = _registry;
+        _super.call(this);
+        this._differs = _differs;
+        this._elRef = _elRef;
+        this._renderer = _renderer;
+        this._registry = _registry;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // DynamicDirective
-        _this._extra = {};
+        this._extra = {};
         // this
-        _this._context = getContext(_viewContainer);
-        _this._elName = _this._el.tagName;
-        return _this;
+        this._context = getContext(_viewContainer);
+        this._elName = this._el.tagName;
     }
     Object.defineProperty(AppliesExprDirective.prototype, "doesApply", {
         set: function (evalStr) {
@@ -307,19 +292,15 @@ var AppliesExprDirective = (function (_super) {
         enumerable: true,
         configurable: true
     });
+    AppliesExprDirective = __decorate([
+        core_1.Directive({
+            selector: '[appliesExpr]',
+            inputs: ['doesApply: appliesExpr', 'extraVars: extraVars'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, dom_element_schema_registry_1.DomElementSchemaRegistry, view_container_ref_1.ViewContainerRef_])
+    ], AppliesExprDirective);
     return AppliesExprDirective;
 }(ObjDirective));
-AppliesExprDirective = __decorate([
-    core_1.Directive({
-        selector: '[appliesExpr]',
-        inputs: ['doesApply: appliesExpr', 'extraVars: extraVars'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        dom_element_schema_registry_1.DomElementSchemaRegistry,
-        view_container_ref_1.ViewContainerRef_])
-], AppliesExprDirective);
 exports.AppliesExprDirective = AppliesExprDirective;
 // set styles dynamically (cf. NgStyle), using strings evaluated in the component context
 var DynamicStyle = (function (_super) {
@@ -329,34 +310,30 @@ var DynamicStyle = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _viewContainer) {
-        var _this = _super.call(this) || this;
-        _this._differs = _differs;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
+        _super.call(this);
+        this._differs = _differs;
+        this._elRef = _elRef;
+        this._renderer = _renderer;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // DynamicDirective
-        _this._extra = {};
+        this._extra = {};
         // this
-        _this._context = getContext(_viewContainer);
-        return _this;
+        this._context = getContext(_viewContainer);
     }
     DynamicStyle.prototype._setItem = function (name, evalStr) {
         var val = js_1.evalExpr(this._context, this._extra)(evalStr);
         this._renderer.setElementStyle(this._el, name, val);
     };
+    DynamicStyle = __decorate([
+        core_1.Directive({
+            selector: '[dynamicStyle]',
+            inputs: ['attributes: dynamicStyle', 'extraVars: extraVars'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, view_container_ref_1.ViewContainerRef_])
+    ], DynamicStyle);
     return DynamicStyle;
 }(ObjDirective));
-DynamicStyle = __decorate([
-    core_1.Directive({
-        selector: '[dynamicStyle]',
-        inputs: ['attributes: dynamicStyle', 'extraVars: extraVars'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        view_container_ref_1.ViewContainerRef_])
-], DynamicStyle);
 exports.DynamicStyle = DynamicStyle;
 // set classes dynamically (cf. NgClass), using strings evaluated in the component context
 var DynamicClass = (function (_super) {
@@ -366,34 +343,30 @@ var DynamicClass = (function (_super) {
         _differs, _elRef, _renderer, 
         // this
         _viewContainer) {
-        var _this = _super.call(this) || this;
-        _this._differs = _differs;
-        _this._elRef = _elRef;
-        _this._renderer = _renderer;
+        _super.call(this);
+        this._differs = _differs;
+        this._elRef = _elRef;
+        this._renderer = _renderer;
         // ObjDirective
-        _this._el = _elRef.nativeElement;
+        this._el = _elRef.nativeElement;
         // DynamicDirective
-        _this._extra = {};
+        this._extra = {};
         // this
-        _this._context = getContext(_viewContainer);
-        return _this;
+        this._context = getContext(_viewContainer);
     }
     DynamicClass.prototype._setItem = function (name, evalStr) {
         var val = js_1.evalExpr(this._context, this._extra)(evalStr);
         this._renderer.setElementClass(this._el, name, val);
     };
+    DynamicClass = __decorate([
+        core_1.Directive({
+            selector: '[dynamicClass]',
+            inputs: ['attributes: dynamicClass', 'extraVars: extraVars'],
+        }), 
+        __metadata('design:paramtypes', [core_1.KeyValueDiffers, core_1.ElementRef, core_1.Renderer, view_container_ref_1.ViewContainerRef_])
+    ], DynamicClass);
     return DynamicClass;
 }(ObjDirective));
-DynamicClass = __decorate([
-    core_1.Directive({
-        selector: '[dynamicClass]',
-        inputs: ['attributes: dynamicClass', 'extraVars: extraVars'],
-    }),
-    __metadata("design:paramtypes", [core_1.KeyValueDiffers,
-        core_1.ElementRef,
-        core_1.Renderer,
-        view_container_ref_1.ViewContainerRef_])
-], DynamicClass);
 exports.DynamicClass = DynamicClass;
 // set local template variables from an object.
 var AssignLocal = (function () {
@@ -411,15 +384,15 @@ var AssignLocal = (function () {
         enumerable: true,
         configurable: true
     });
+    AssignLocal = __decorate([
+        core_1.Directive({
+            selector: '[assignLocal]',
+            inputs: ['localVariable: assignLocal'],
+        }), 
+        __metadata('design:paramtypes', [view_container_ref_1.ViewContainerRef_])
+    ], AssignLocal);
     return AssignLocal;
 }());
-AssignLocal = __decorate([
-    core_1.Directive({
-        selector: '[assignLocal]',
-        inputs: ['localVariable: assignLocal'],
-    }),
-    __metadata("design:paramtypes", [view_container_ref_1.ViewContainerRef_])
-], AssignLocal);
 exports.AssignLocal = AssignLocal;
 // binding to [multiple events](https://github.com/angular/angular/issues/6675)
 // https://developer.mozilla.org/en-US/docs/Web/Events

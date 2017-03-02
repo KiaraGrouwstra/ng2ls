@@ -1,10 +1,10 @@
 "use strict";
-var R = require("ramda");
+var R = require('ramda');
 // import { Observable } from 'rxjs/Observable';
 // import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
-var rxjs_1 = require("rxjs");
-require("rxjs/add/operator/combineLatest");
-require("rxjs/add/operator/startWith");
+var rxjs_1 = require('rxjs');
+require('rxjs/add/operator/combineLatest');
+require('rxjs/add/operator/startWith');
 // import { EventEmitter } from '@angular/core';
 // // append to array:
 function elemToArr(arr, x) {
@@ -55,14 +55,11 @@ function notify(kw, obs) {
 exports.notify = notify;
 // generalizes combineLatest from 2 Observables to an array of n: combLastObs([a$, b$]).map([a, b] => ...)
 function combLastObs(arr) {
-    return arr.reduce(function (obj_obs, v, idx) {
-        var combiner = function (obj, val) {
-            return Object.assign(obj, (_a = {}, _a[idx] = val, _a));
-            var _a;
-        };
-        return R.hasProp('subscribe', v) ?
-            obj_obs.combineLatest(v, combiner) :
-            obj_obs.map(function (obs) { return combiner(obs, v); });
+    return arr.reduce(function (obj_obs, o, idx) {
+        var combiner = function (obj, val) { return Object.assign(obj, (_a = {}, _a[idx] = val, _a)); var _a; };
+        return o.subscribe ?
+            obj_obs.combineLatest(o, combiner) :
+            obj_obs.map(function (obs) { return combiner(obs, o); });
     }, new rxjs_1.BehaviorSubject({})).map(function (r) { return R.values(r); });
 }
 exports.combLastObs = combLastObs;

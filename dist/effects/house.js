@@ -9,25 +9,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var _this = this;
-require("rxjs/add/operator/map");
-require("rxjs/add/operator/catch");
-require("rxjs/add/operator/startWith");
-require("rxjs/add/operator/switchMap");
-require("rxjs/add/operator/mergeMap");
-require("rxjs/add/operator/toArray");
-require("rxjs/add/operator/debounceTime");
-var R = require("ramda");
-var db_1 = require("@ngrx/db");
-var Observable_1 = require("rxjs/Observable");
-var of_1 = require("rxjs/observable/of");
-var defer_1 = require("rxjs/observable/defer");
-var empty_1 = require("rxjs/observable/empty");
-var effects_1 = require("./effects");
-var core_1 = require("@angular/core");
-var http_1 = require("@angular/http");
-var effects_2 = require("@ngrx/effects");
-var actions_1 = require("../actions/actions");
-var actions_2 = require("../actions");
+require('rxjs/add/operator/map');
+require('rxjs/add/operator/catch');
+require('rxjs/add/operator/startWith');
+require('rxjs/add/operator/switchMap');
+require('rxjs/add/operator/mergeMap');
+require('rxjs/add/operator/toArray');
+require('rxjs/add/operator/debounceTime');
+var R = require('ramda');
+var db_1 = require('@ngrx/db');
+var Observable_1 = require('rxjs/Observable');
+var of_1 = require('rxjs/observable/of');
+var defer_1 = require('rxjs/observable/defer');
+var empty_1 = require('rxjs/observable/empty');
+var effects_1 = require('./effects');
+var core_1 = require('@angular/core');
+var http_1 = require('@angular/http');
+var effects_2 = require('@ngrx/effects');
+var actions_1 = require('../actions/actions');
+var actions_2 = require('../actions');
 // const book = { SearchAction: class SearchAction { type = 'search'; constructor(public payload: string) {}; } };
 // const { SearchAction } = book;
 var SearchAction = (function () {
@@ -56,7 +56,7 @@ var collection = {
         return LoadFailAction;
     }()),
 };
-var foo_1 = require("../actions/foo");
+var foo_1 = require('../actions/foo');
 // import { TokenService } from '../services'; //, HouseService
 var HouseService = (function () {
     function HouseService() {
@@ -101,31 +101,29 @@ var HouseEffects = (function () {
         this.search$2 = makeEffect(foo_1.pairs.search, foo_1.pairs.search.action, function (s) { return of_1.of(s); });
         this.search$3 = makeEffect(actions_2.actions.houses.search, actions_2.actions.houses.searchComplete, function (projectId) { return !projectId ? empty_1.empty() : _this.houseService.query(); });
     }
+    __decorate([
+        effects_2.Effect({ dispatch: false }), 
+        __metadata('design:type', Observable_1.Observable)
+    ], HouseEffects.prototype, "openDB$", void 0);
+    __decorate([
+        effects_2.Effect(), 
+        __metadata('design:type', Observable_1.Observable)
+    ], HouseEffects.prototype, "search$", void 0);
+    __decorate([
+        // vs. Success
+        effects_2.Effect(), 
+        __metadata('design:type', Object)
+    ], HouseEffects.prototype, "search$2", void 0);
+    __decorate([
+        effects_2.Effect(), 
+        __metadata('design:type', Object)
+    ], HouseEffects.prototype, "search$3", void 0);
+    HouseEffects = __decorate([
+        core_1.Injectable(), 
+        __metadata('design:paramtypes', [http_1.Http, effects_2.Actions, HouseService, db_1.Database])
+    ], HouseEffects);
     return HouseEffects;
 }());
-__decorate([
-    effects_2.Effect({ dispatch: false }),
-    __metadata("design:type", Observable_1.Observable)
-], HouseEffects.prototype, "openDB$", void 0);
-__decorate([
-    effects_2.Effect(),
-    __metadata("design:type", Observable_1.Observable)
-], HouseEffects.prototype, "search$", void 0);
-__decorate([
-    effects_2.Effect(),
-    __metadata("design:type", Object)
-], HouseEffects.prototype, "search$2", void 0);
-__decorate([
-    effects_2.Effect(),
-    __metadata("design:type", Object)
-], HouseEffects.prototype, "search$3", void 0);
-HouseEffects = __decorate([
-    core_1.Injectable(),
-    __metadata("design:paramtypes", [http_1.Http,
-        effects_2.Actions,
-        HouseService,
-        db_1.Database])
-], HouseEffects);
 exports.HouseEffects = HouseEffects;
 var makeEffect = function (pair, completeAction, mapper, opts) {
     if (opts === void 0) { opts = {}; }

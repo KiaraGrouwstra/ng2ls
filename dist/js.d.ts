@@ -1,4 +1,4 @@
-import * as R from 'ramda';
+/// <reference types="node" />
 import { Component, OpaqueToken } from '@angular/core';
 import { ValidatorFn, FormBuilder, AbstractControl } from '@angular/forms';
 import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, StringLike, Fn } from './types';
@@ -47,8 +47,8 @@ export declare let mapNestedArr: <T, U>(f: (v: T, path: ArrayLike<Prop>) => U, v
  * map the contents of a nested yet otherwise homogeneous object (e.g. { a: 1, z: { y: { b: 2 }, c: 3 } })
  */
 export declare let mapNestedObj: <T, U>(f: (v: T, path: ArrayLike<Prop>) => U, v: NestedObj<T>, path?: Prop[]) => NestedObj<U>;
-export declare let falsy: R.Pred<any>;
-export declare let truthy: R.Variadic<boolean>;
-export declare let lookup: (arg1: {}, arg0?: any) => <V, T extends Record<any, V>>(obj: T) => V;
-export declare let lookupOr: R.CurriedFunction2<Object, string, <V, T extends Record<any, V>>(obj: T) => V>;
-export declare let callFn: <T>(fn: Fn<T>, thisArg: any, args: IArguments) => T;
+export declare let falsy: any;
+export declare let truthy: any;
+export declare let lookup: any;
+export declare let lookupOr: any;
+export declare let callFn: <T>(fn: (...args: any[]) => T, thisArg: any, args: IArguments) => T;

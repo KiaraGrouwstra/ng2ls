@@ -1,6 +1,6 @@
 "use strict";
-var R = require("ramda");
-var core_1 = require("@angular/core");
+var R = require('ramda');
+var core_1 = require('@angular/core');
 // annotations: decorators that add metadata, rather than say mutating the target
 // extendible Component decorator, extended to merge items from here:
 // http://stackoverflow.com/questions/36837421/extending-component-decorator-with-base-class-decorator/36837482#36837482
@@ -45,8 +45,8 @@ function Inherit() {
         if (metaInformations) {
             var parentTarget = Object.getPrototypeOf(target.prototype).constructor;
             var parentMetaInformation = Reflect.getMetadata("annotations", parentTarget);
-            var _loop_1 = function (metaInformation) {
-                var _loop_2 = function (parentMetadata) {
+            var _loop_1 = function(metaInformation) {
+                var _loop_2 = function(parentMetadata) {
                     if (parentMetadata.constructor === metaInformation.constructor) {
                         Object.keys(parentMetadata).forEach(function (key) {
                             if (!lang_1.isPresent(metaInformation[key])) {
@@ -61,8 +61,8 @@ function Inherit() {
                     _loop_2(parentMetadata);
                 }
             };
-            for (var _i = 0, metaInformations_1 = metaInformations; _i < metaInformations_1.length; _i++) {
-                var metaInformation = metaInformations_1[_i];
+            for (var _a = 0, metaInformations_1 = metaInformations; _a < metaInformations_1.length; _a++) {
+                var metaInformation = metaInformations_1[_a];
                 _loop_1(metaInformation);
             }
         }

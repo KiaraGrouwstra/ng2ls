@@ -1,5 +1,5 @@
 "use strict";
-var actions_1 = require("./actions");
+var actions_1 = require('./actions');
 var defaultActions = [
     'Search',
 ];

@@ -10,6 +10,24 @@ type Reducer<T> = (State, T) => State;
 
 # trick to type `R.map(f, { a: b })`: use codegen to write let obj = `(f) => ({ a: f(b) })`, then use with `obj(f)`
 
+const wrapMap = (o) => `(f = R.identity) => ({\n${R.pipe(R.toPairs, R.map(([k, v]) => `  ${k}: f(${JSON.stringify(v)}),`), R.join('\n'))(o)}\n})`;
+const wrapMapObjIndexed = (o) => `(f = R.identity) => ({\n${R.pipe(R.toPairs, R.map(([k, v]) => `  ${k}: f(${JSON.stringify(v)}, ${JSON.stringify(k)}),`), R.join('\n'))(o)}\n})`;
+
+```js
+// usage:
+let o = { a: 'foo' };
+wrapMap(o);
+// "(f = R.identity) => ({
+//   a: f("foo"),
+// })"
+// // call with default R.identity: returns original object
+wrapMapObjIndexed(o);
+// "(f = R.identity) => ({
+//   a: f("foo", "a"),
+// })"
+// // call with default R.identity: returns original object
+```
+
 let obj = {
   foos: <number>() => ({ // State
     init: 0,

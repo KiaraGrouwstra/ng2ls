@@ -12,7 +12,8 @@
     "build:uglify": "uglifyjs -c --screw-ie8 --comments -o ./release/bundles/ng2ls.min.umd.js ./release/bundles/ng2ls.umd.js",
     "prebuild": "npm run test && npm run clean:pre",
     "postbuild": "npm run clean:post && npm run copy",
-    "build": "npm run build:js && npm run build:umd && npm run build:uglify"
+    "build": "npm run build:js && npm run build:umd && npm run build:uglify",
+    "types": "echo testing types... && bash test.sh"
   },
   "author": "Tycho Grouwstra <tychogrouwstra@gmail.com>",
   "license": "MIT",

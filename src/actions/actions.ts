@@ -77,16 +77,12 @@ export interface Tp<T> {
 }
 let c = <T>(): Type<Tp<T>> => class implements Tp<T> {
   tp: T;
+  toString() { return this.tp.toString(); };
 }
 let tpCls = c<string>();
-// v like makeAction<T>, except in that it has converted the type parameter into a function parameter.
-// this allows one to use values from data structures rather than having to manually invoke each time.
+// v like makeAction<T> with type moved to param for gen by het map
 let makeTypedAction = <T>(typeName: string, actionName: string, cls: Type<Tp<T>>): ActionCtor<T> => makeAction<T>(typeName, actionName);
-let typedAction = makeTypedAction('shoe', 'make', c<string>());
-// ^ note this is no step up over `makeAction` syntax-wise, and the use-case of being able to store the type in data structures depends on TS support for heterogeneous map()...
-// v failed attempt to factor out function application:
-// let unfinished = c<string>;
-// let typedAction2 = makeTypedAction('shoe', 'make', unfinished());
+// usage: let typedAction = makeTypedAction('shoe', 'make', c<string>());
 
 // INFO LOSS: <any>?, ActionInfo with ActionClass rather than heterogeneous object of MyAction<T>
 // create actions for given types and a name

@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { inc, add } from 'ramda';
 import { makeAction } from '../actions/actions';
 import { reducerFn, mapReducers, mapStructReducers } from './reducers';
 let cls = makeAction('book', 'create');
@@ -22,11 +23,11 @@ describe('mapReducers', () => {
 describe('mapStructReducers', () => {
   it('should map [ReducerStructMap, State] tuples to `(State, Action) ~> State` reducers', () => {
     let reducerObj = mapStructReducers({
-      fixed: { fixed: 123 },
-      set: { set: R.identity },
-      update: { update: R.dec },
-      edit: { edit: (state: number, amount: number) => state + amount },
-      misc: { misc: R.inc },
+      fixed: { always123: 123 }, // v
+      set: { doublePayload: R.multiply(2) }, // (payload) ~> state
+      update: { inc }, // (state) ~> state
+      edit: { add },  // (payload, state) ~> state
+      misc: { misc: (state: number, amount: number) => state + amount }, // (state, payload) ~> state // default redux order, but sucks for FP
     });
     expect(reducerObj['edit'](0, { type: 'edit', payload: 2 })).toEqual(1);
   })

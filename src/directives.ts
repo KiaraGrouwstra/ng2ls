@@ -387,26 +387,3 @@ export class DynamicClass extends ObjDirective { // DynamicDirective(ObjDirectiv
   }
 
 }
-
-// set local template variables from an object.
-@Directive({
-  selector: '[assignLocal]',
-  inputs: ['localVariable: assignLocal'],
-})
-export class AssignLocal {
-  _el: HTMLElement;
-  _context: Obj<any>;
-  constructor(
-    _viewContainer: ViewContainerRef_,
-  ) {
-    this._context = getContext(_viewContainer);
-  }
-  set localVariable(obj: any) {
-    R.toPairs(obj).forEach(([k, v]: [string, any]) => {
-      this._context[k] = v;
-    })(obj);
-  }
-}
-
-// binding to [multiple events](https://github.com/angular/angular/issues/6675)
-// https://developer.mozilla.org/en-US/docs/Web/Events

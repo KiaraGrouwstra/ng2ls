@@ -111,43 +111,6 @@ describe('directives', () => {
   //   expect(el).toEqual('bar');
   // }));
 
-  describe('AssignLocal', () => {
-
-    it('should save a value and reuse it', test(
-      tmplt(`<div
-              [assignLocal]="{ hello: strExpr }"
-              [id]="hello"
-            >{{ hello }}</div>`),
-      ({ comp, el, fixture }: TestPars) => {
-        expect(el.textContent).toEqual('foo');
-    }));
-
-    xit('should work even in loops', test(
-      tmplt(`<div
-              *ngFor="let item of arrExpr; let idx = index"
-              [assignLocal]="{ hello: item }"
-              [id]="hello"
-            >{{ idx }}: <!-- {{ item }} -->{{ hello }}</div>`),
-      ({ comp, el, fixture }: TestPars) => {
-        console.log('TEST');
-        print('comp', comp);
-        print('el', el);
-        print('fixture', fixture);
-        print('comp.cdr', comp.cdr);
-        print('comp.cdr._view', comp.cdr._view);
-        print('fixture.elementRef', fixture.elementRef);
-        print('fixture.componentRef', fixture.componentRef);
-        print('fixture.componentRef._hostElement', fixture.componentRef._hostElement);
-        print('comp.cdr._view.ref', comp.cdr._view.ref);
-        print('comp.cdr._view.context', comp.cdr._view.context);
-        print('comp.cdr._view._currentDebugContext', comp.cdr._view._currentDebugContext);
-        print('comp.cdr._view._NgFor_0_6', comp.cdr._view._NgFor_0_6);
-        print('comp.cdr._view._NgFor_0_6._ngForOf', comp.cdr._view._NgFor_0_6._ngForOf);
-        expect(el.textContent).toEqual('foobarbaz');
-    }));
-
-  });
-
   // it('', test({ component, class: TestComponent }, ({ test_cmp: comp, el, fixture }) => {
   //   expect().toEqual();
   // }));

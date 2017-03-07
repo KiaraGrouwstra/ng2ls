@@ -3,12 +3,12 @@ import { Http } from '@angular/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { Action } from '@ngrx/store';
 import { Interception } from './interceptor';
-import { ACTION as A } from '../actions/actions';
+// import { ACTION as A } from '../actions/actions';
 import * as R from 'ramda';
 
-import { typeIn, typeNIn, toAction } from '../util';
+// import { typeIn, typeNIn, toAction } from '../util';
 
-import { LoginView, HomeView } from '../pages';
+// import { LoginView, HomeView } from '../pages';
 
 @Injectable()
 export class Interceptor implements Interception {

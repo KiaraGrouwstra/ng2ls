@@ -107,17 +107,19 @@ describe('js', () => {
   })
 
   describe('editVals', () => {
+    const dbl = (y: number) => y * 2;
+    const fallback = (y: number) => y ? y : 'nope';
 
     it('editValsOriginal', () => {
-      expect(editValsOriginal({ a: y => y * 2, b: y => y * y, d: y => y ? y : 'nope' })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, c: 7 });
+      expect(editValsOriginal({ a: dbl, b: (y: number) => y * y, d: fallback })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, c: 7 });
     })
 
     it('editValsBoth', () => {
-      expect(editValsBoth({ a: y => y * 2, b: y => y * y, d: y => y ? y : 'nope' })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, c: 7, d: 'nope' });
+      expect(editValsBoth({ a: dbl, b: (y: number) => y * y, d: fallback })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, c: 7, d: 'nope' });
     })
 
     it('editValsLambda', () => {
-      expect(editValsLambda({ a: y => y * 2, b: y => y * y, d: y => y ? y : 'nope' })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, d: 'nope' });
+      expect(editValsLambda({ a: dbl, b: (y: number) => y * y, d: fallback })({ a: 3, b: 5, c: 7 })).toEqual({ a: 6, b: 25, d: 'nope' });
     })
 
   });

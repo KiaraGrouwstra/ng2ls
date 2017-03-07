@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/startWith';
@@ -5,22 +6,21 @@ import 'rxjs/add/operator/switchMap';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/toArray';
 import 'rxjs/add/operator/debounceTime';
-
-import * as R from 'ramda';
-import { Database } from '@ngrx/db';
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import { defer } from 'rxjs/observable/defer';
-import { Action } from '@ngrx/store';
 import { empty } from 'rxjs/observable/empty';
-import { unJson, always } from './effects';
 
 import { Injectable, Inject } from '@angular/core';
 import { Http, Headers, RequestOptions } from '@angular/http';
+import { Action } from '@ngrx/store';
+import { Database } from '@ngrx/db';
 import { Actions, Effect } from '@ngrx/effects';
 
+import { unJson } from './effects'; //, always
 import { MyAction, toPayload, ActionCtor, ActionPair } from '../actions/actions';
 import { actions } from '../actions';
+
 // const book = { SearchAction: class SearchAction { type = 'search'; constructor(public payload: string) {}; } };
 // const { SearchAction } = book;
 class SearchAction { type = 'search'; constructor(public payload: string) {}; }

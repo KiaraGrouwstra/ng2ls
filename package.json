@@ -28,8 +28,8 @@
     "rxjs": "^5.0.0-beta.12"
   },
   "devDependencies": {
-    "@types/jasmine": "^2.2.33",
-    "@types/node": "^6.0.38",
+    "@types/jasmine": "^2.5.43",
+    "@types/node": "^6.0.64",
     "@types/ramda": "github:types/npm-ramda",
     "awesome-typescript-loader": "^2.2.1",
     "jasmine": "^2.5.0",
@@ -42,7 +42,7 @@
     "ts-loader": "^0.8.2",
     "tslint": "^3.15.1",
     "tslint-loader": "^2.1.5",
-    "typescript": "^2.0.2",
+    "typescript": "^2.3.0-dev.20170306",
     "uglifyjs": "^2.4.10",
     "webpack": "^2.1.0-beta.21",
     "zone.js": "^0.6.17"

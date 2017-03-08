@@ -2,8 +2,8 @@ import * as R from 'ramda';
 import { Observable } from 'rxjs/Observable';
 import { combineSelectors } from '../reducers';
 
-import { Bar } from '../models/foo';
-import { ActionTypes as actions } from '../actions/foo';
+import { Bar } from './models/foo';
+import { Types as actions } from '../actions/foo';
 let { add, subtract, logOk, logNg, barOk } = actions;
 
 export type State = number;

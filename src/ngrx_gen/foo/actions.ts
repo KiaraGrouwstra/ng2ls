@@ -1,57 +1,44 @@
-import { makeBoth } from '../../actions';
-const tp = 'foo';
-
-const f = makeBoth(tp);
-export let pairs = {
-  add     : f<number>('add'),
-  subtract: f<number>('subtract'),
-  log     : f<number>('log'),
-  logOk   : f<number>('logOk'),
-  logNg   : f<string>('logNg'),
-  bar     : f<number>('bar'),
-  barOk   : f<number>('barOk'),
-};
-
-let { add, subtract, log, logOk, logNg, bar, barOk } = pairs;
+import { type } from '../util';
+import { Bar } from './models/foo';
 
 export const Types = {
-  add     : add     .type,
-  subtract: subtract.type,
-  log     : log     .type,
-  logOk   : logOk   .type,
-  logNg   : logNg   .type,
-  bar     : bar     .type,
-  barOk   : barOk   .type,
+  add     : type('[foo] add'),
+  subtract: type('[foo] subtract'),
+  log     : type('[foo] log'),
+  logOk   : type('[foo] logOk'),
+  logNg   : type('[foo] logNg'),
+  bar     : type('[foo] bar'),
+  barOk   : type('[foo] barOk'),
 };
 
-export let actions = {
-  add     : add     .action,
-  subtract: subtract.action,
-  log     : log     .action,
-  logOk   : logOk   .action,
-  logNg   : logNg   .action,
-  bar     : bar     .action,
-  barOk   : barOk   .action,
-};
+export class      add { type = Types.add     ; constructor(public payload: number) {} }
+export class subtract { type = Types.subtract; constructor(public payload: number) {} }
+export class      log { type = Types.log     ; constructor(public payload: number) {} }
+export class    logOk { type = Types.logOk   ; constructor(public payload: number) {} }
+export class    logNg { type = Types.logNg   ; constructor(public payload: string) {} }
+export class      bar { type = Types.bar     ; constructor(public payload: number) {} }
+export class    barOk { type = Types.barOk   ; constructor(public payload: number) {} }
+
+export let actions = { add, subtract, log, logOk, logNg, bar, barOk };
 
 export type Actions
-  = typeof add     .action
-  | typeof subtract.action
-  | typeof log     .action
-  | typeof logOk   .action
-  | typeof logNg   .action
-  | typeof bar     .action
-  | typeof barOk   .action;
+  = add
+  | subtract
+  | log
+  | logOk
+  | logNg
+  | bar
+  | barOk;
 
-// usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.foo = dispatchers(store);'
+// usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.foo = dispatchers(store);', then use the functions to dispatch actions
 export let dispatchers = (store: Observable<Actions>) => {
   let do = store.dispatch.bind(store);
   return {
-     add     : (pl: number) => do(add     .action(pl)),
-     subtract: (pl: number) => do(subtract.action(pl)),
-     log     : (pl: number) => do(log     .action(pl)),
-     logOk   : (pl: number) => do(logOk   .action(pl)),
-     logNg   : (pl: string) => do(logNg   .action(pl)),
-     bar     : (pl: number) => do(bar     .action(pl)),
-     barOk   : (pl: number) => do(barOk   .action(pl)),
+     add     : (pl: number) => do(add     (pl)),
+     subtract: (pl: number) => do(subtract(pl)),
+     log     : (pl: number) => do(log     (pl)),
+     logOk   : (pl: number) => do(logOk   (pl)),
+     logNg   : (pl: string) => do(logNg   (pl)),
+     bar     : (pl: number) => do(bar     (pl)),
+     barOk   : (pl: number) => do(barOk   (pl)),
 };

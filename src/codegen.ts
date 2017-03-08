@@ -19,26 +19,40 @@ const getReducers = (domain, forActions = false) => {
 
 // group: string,
 export function actions(domain, name/*: string*/): string {
-  let typeObj /*: Obj<string> */ = R.map(R.head)(getReducers(domain, true));
-  let fnName = 'f';
-  let keys = R.keys(typeObj);
+  let reducers /*: Obj<string> */ = R.map(R.head)(getReducers(domain, true));
+  // let fnName = 'f';
+  let { models } = domain;
+  let names = R.map(getNames)({ models, reducers });
+  let keys = R.keys(reducers);
   let maxLength = keys.map(R.length).reduce(R.max, 0);
   const pad = (k: string) => k + <any>R.repeat(' ', <any>maxLength - k.length).join('');
-  let pairs = mapLines((tp /*: string */, k) => `  ${pad(k)}: ${fnName}<${tp}>('${k}'),`)(typeObj);
-  let types = keys.map((k) => `  ${pad(k)}: ${pad(k)}.type,\n`).join('');
-  let actionStr = keys.map((k) => `  ${pad(k)}: ${pad(k)}.action,\n`).join('');
-  let type = keys.map((k) => `typeof ${pad(k)}.action`).join('\n  | ');
+  const leftPad = (k: string) => <any>R.repeat(' ', <any>maxLength - k.length).join('') + k;
+  let classes = mapLines((tp /*: string */, k) => 
+`export class ${leftPad(k)} { type = Types.${pad(k)}; constructor(public payload: ${tp}) {} }` // Action
+  )(reducers);
+  // let pairs = mapLines((tp /*: string */, k) => `  ${pad(k)}: ${fnName}<${tp}>('${k}'),`)(reducers);
+  let types = keys.map((k) =>
+    `  ${pad(k)}: type('[${name}] ${k}'),\n` // ${pad(k)}.type
+  ).join('');
+  let actionStr = keys.map((k) => `${k}`).join(', '); // Action
+  let type = keys.map((k) =>
+    // `typeof ${k}`
+    `${k}` // Action
+  ).join('\n  | ');
   let dispatcherStr = mapLines((tp /*: string */, k) => {
-    return `     ${pad(k)}: (pl: ${tp}) => do(${pad(k)}.action(pl)),`;
-  })(typeObj);
+    return `     ${pad(k)}: (pl: ${tp}) => do(${pad(k)}(pl)),`;
+  })(reducers);
+// export let pairs = {\n${pairs}\n};\n
+// import { makeBoth } from '../../actions';
+// const ${fnName} = makeBoth(tp);
+// let { ${names.reducers} } = pairs;\n
+// const tp = '${name}';\n
   return `
-import { makeBoth } from '../../actions';
-const tp = '${name}';\n
-const ${fnName} = makeBoth(tp);
-export let pairs = {\n${pairs}\n};\n
-let { ${keys.join(', ')} } = pairs;\n
+import { type } from '../util';
+import { ${names.models} } from './models/${name}';\n
 export const Types = {\n${types}};\n
-export let actions = {\n${actionStr}};\n
+${classes}\n
+export let actions = { ${actionStr} };\n
 export type Actions
   = ${type};\n
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.${name} = dispatchers(store);', then use the functions to dispatch actions
@@ -87,12 +101,12 @@ ${effectStr}
 // codeGenEffect({ search: {...} }, 'houses');
 // TODO: effects like [this](https://github.com/ngrx/example-app/blob/17a1987ee037f7f3d91bbe7df5e1d70e14ca3c77/src/app/effects/collection.ts#L32-L35). I'll need to find their pattern first...
 
-export function reducers(domain/*: DomainMeta*/, domainName: string): string {
+export function reducers(domain/*: DomainMeta*/, name: string): string {
   let { state, init, selectors, effects, models } = domain;
   let isInterface = state[0] == '{';
   let reducers = getReducers(domain);
   let names = R.map(getNames)({ selectors, reducers, models });
-  let actionsName = 'actions'; // `${domainName}Actions`
+  let actionsName = 'actions'; // `${name}Actions`
   let selectorStr = mapLines((selector, k: string) => {
     let f = !R.is(Array)(selector) ? `R.map(${selector})` : (([deps, fn]) =>
       `combineSelectors([${deps.join(', ')}], ${fn})`
@@ -108,8 +122,8 @@ import * as R from 'ramda';
 import { Observable } from 'rxjs/Observable';
 import { combineSelectors } from '../reducers';
 
-import { ${names.models} } from '../models/${domainName}';
-import { ActionTypes as ${actionsName} } from '../actions/${domainName}';
+import { ${names.models} } from './models/${name}';
+import { Types as ${actionsName} } from '../actions/${name}';
 let { ${names.reducers} } = ${actionsName};\n
 export ${ isInterface ? `interface State ${state}` : `type State = ${state};`}\n
 export const initialState: State = ${init};\n

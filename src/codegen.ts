@@ -32,13 +32,13 @@ export function actions(domain, name/*: string*/): string {
   )(reducers);
   // let pairs = mapLines((tp /*: string */, k) => `  ${pad(k)}: ${fnName}<${tp}>('${k}'),`)(reducers);
   let types = keys.map((k) =>
-    `  ${pad(k)}: type('[${name}] ${k}'),\n` // ${pad(k)}.type
+    `  ${pad(k)}: tp('${k}'),\n` // ${pad(k)}.type // type('[${name}] ${k}')
   ).join('');
   let actionStr = keys.map((k) => `${k}`).join(', '); // Action
   let type = keys.map((k) =>
     // `typeof ${k}`
     `${k}` // Action
-  ).join('\n  | ');
+  ).join(' | '); // \n 
   let dispatcherStr = mapLines((tp /*: string */, k) => {
     return `     ${pad(k)}: (pl: ${tp}) => do(${pad(k)}(pl)),`;
   })(reducers);
@@ -50,11 +50,11 @@ export function actions(domain, name/*: string*/): string {
   return `
 import { type } from '../util';
 import { ${names.models} } from './models/${name}';\n
+const tp = (k: string) => type('[${name}] '+k);
 export const Types = {\n${types}};\n
 ${classes}\n
-export let actions = { ${actionStr} };\n
-export type Actions
-  = ${type};\n
+export let actions = { ${actionStr} };
+export type Actions = ${type};\n
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.${name} = dispatchers(store);', then use the functions to dispatch actions
 export let dispatchers = (store: Observable<Actions>) => {
   let do = store.dispatch.bind(store);

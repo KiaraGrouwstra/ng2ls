@@ -1,14 +1,15 @@
 import { type } from '../util';
 import { Bar } from './models/foo';
 
+const tp = (k: string) => type('[foo] '+k);
 export const Types = {
-  add     : type('[foo] add'),
-  subtract: type('[foo] subtract'),
-  log     : type('[foo] log'),
-  logOk   : type('[foo] logOk'),
-  logNg   : type('[foo] logNg'),
-  bar     : type('[foo] bar'),
-  barOk   : type('[foo] barOk'),
+  add     : tp('add'),
+  subtract: tp('subtract'),
+  log     : tp('log'),
+  logOk   : tp('logOk'),
+  logNg   : tp('logNg'),
+  bar     : tp('bar'),
+  barOk   : tp('barOk'),
 };
 
 export class      add { type = Types.add     ; constructor(public payload: number) {} }
@@ -20,15 +21,7 @@ export class      bar { type = Types.bar     ; constructor(public payload: numbe
 export class    barOk { type = Types.barOk   ; constructor(public payload: number) {} }
 
 export let actions = { add, subtract, log, logOk, logNg, bar, barOk };
-
-export type Actions
-  = add
-  | subtract
-  | log
-  | logOk
-  | logNg
-  | bar
-  | barOk;
+export type Actions = add | subtract | log | logOk | logNg | bar | barOk;
 
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.foo = dispatchers(store);', then use the functions to dispatch actions
 export let dispatchers = (store: Observable<Actions>) => {

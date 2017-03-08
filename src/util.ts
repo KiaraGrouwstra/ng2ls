@@ -13,7 +13,7 @@ export function type<T>(label: T | ''): T {
 }
 
 // convert an array to an object based on a lambda
-export let arr2obj = <T>(fn: (k: string) => T) => R.pipe(R.map((k: string) => [k, fn(k)]), R.fromPairs);
+export let arr2obj = <T>(fn: (k: string) => T) => R.pipe(R.map((k: string) => [k, fn(k)]), <any>R.fromPairs);
 
 export let json = JSON.parse;
 // convert a class instance to a pojo
@@ -33,7 +33,7 @@ export function makeUrl(url: string, pars = {}): string {
 }
 
 // convert query/hash params to an object
-export let fromParams: (str: string) => Obj<string> = R.pipe(
+export let fromParams: (str: string) => Obj</*string*/any> = R.pipe(
   R.defaultTo(''),
   R.split('&'),
   R.map(

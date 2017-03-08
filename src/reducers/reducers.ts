@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { combineLatest } from 'rxjs/observable/combineLatest';
 import { Action, ActionReducer } from '@ngrx/store';
 import { trace } from '../util';
 import { Obj } from '../models/models';
@@ -53,3 +54,12 @@ let mapper = (fn: <T>(types: ReducerMap<T>, initialState: T) => ActionReducer<T>
 export let mapReducers = mapper(reducerFn);
 // map [ReducerStructMap, State] tuples to `(State, Action) ~> State` reducers
 export let mapStructReducers = mapper(reducerStructFn);
+
+export type Selector<TState, T> = (state$: Observable<TState>) => Observable<T>;
+export type CombineSelectors = <TState, Types extends any[], TRes>(selectors: Selector<TState, any>[]
+    /* Types.map(Tp => Selector<TState, Tp>) */, fn: (params: Types) => TRes) => Selector<TState, TRes>;
+export let combineSelectors: CombineSelectors = <TState, Types extends any[], TRes>(selectors: Selector<TState, any>[]
+    /* Types.map(Tp => Selector<TState, Tp>) */, fn: (params: Types) => TRes) =>
+    (state$: Observable<TState>): Observable<TRes> => combineLatest/*<...Types>*/<any>
+    (...selectors.map(<T>(selector: Selector<TState, T>) => state$.let(selector))).map(fn);
+    // ^ could simplify from array with R.apply(fn) if using ...params wouldn't error with "A rest parameter must be of an array type"

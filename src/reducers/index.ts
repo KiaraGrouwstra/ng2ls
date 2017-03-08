@@ -114,12 +114,3 @@ export let collectionSelectors = R.map((sel) => R.pipe(getCollectionState, sel))
 export const getLayoutState = (state$: Observable<State>) => state$.select(R.prop('layout'));
 // export const getShowSidenav = R.pipe(fromLayout.getShowSidenav, getLayoutState);
 */
-
-export type Selector<TState, T> = (state$: Observable<TState>) => Observable<T>;
-export type CombineSelectors = <TState, Types extends any[], TRes>(selectors: Selector<TState, any>[]
-    /* Types.map(Tp => Selector<TState, Tp>) */, fn: (params: Types) => TRes) => Selector<TState, TRes>;
-export let combineSelectors: CombineSelectors = <TState, Types extends any[], TRes>(selectors: Selector<TState, any>[]
-    /* Types.map(Tp => Selector<TState, Tp>) */, fn: (params: Types) => TRes) =>
-    (state$: Observable<TState>): Observable<TRes> => combineLatest/*<...Types>*/<any>
-    (...selectors.map(<T>(selector: Selector<TState, T>) => state$.let(selector))).map(fn);
-    // ^ could simplify from array with R.apply(fn) if using ...params wouldn't error with "A rest parameter must be of an array type"

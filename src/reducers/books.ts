@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Observable } from 'rxjs/Observable';
-import { combineLatest } from 'rxjs/observable/combineLatest';
+// import { combineLatest } from 'rxjs/observable/combineLatest';
 // import { Book } from '../models/models';
 export type Book = { id: string };
 import { ActionTypes as bookActions } from '../actions/book';

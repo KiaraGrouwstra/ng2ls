@@ -67,15 +67,18 @@ let obj/*: NgrxStruct*/ = {
 };
 
 export let genNgrx = R.mapObjIndexed((domain: any, k: string): Obj<string> =>
-  R.mapObjIndexed((concern: (domain: any, name: string) => string, domainName: string) => {
-    // ...
-    // actions: use `mapSyncActions` on `reducers`' keys + effects' keys + ok/ng; see actions.ts, actions.spec.ts, foo.ts, ngrx_gen/foo/actions.ts (/ codegen.ts)
-    // reducers: use `mapReducers` on `reducers` + effects' ok/ng, see reducers.ts, reducers.spec.ts, ngrx_gen/foo/reducers.ts (/ codegen.ts)
-    // selectors: see ngrx_gen/foo/reducers.ts (/ codegen.ts)
-    // effects: just make these files manually? then maybe simplify structure here, e.g. here just `effects: { log: { ok: (state, pl: number) => pl, ng: (state, pl: string) => pl.length } }`
-    // dispatchers: see ngrx_gen/foo/actions.ts (/ codegen.ts)
-    // difference with before: generation dynamic instead of codegen, ignoring Action types (`MyAction<T>` -> just `Action`). manually type dispatcher part afterwards.
-  }))(obj);
+  R.mapObjIndexed((part: any, domainName: string) => {
+      // ...
+      // actions: use `mapSyncActions` on `reducers`' keys + effects' keys + ok/ng; see actions.ts, actions.spec.ts, foo.ts, ngrx_gen/foo/actions.ts (/ codegen.ts)
+      // reducers: use `mapReducers` on `reducers` + effects' ok/ng, see reducers.ts, reducers.spec.ts, ngrx_gen/foo/reducers.ts (/ codegen.ts)
+      // selectors: see ngrx_gen/foo/reducers.ts (/ codegen.ts)
+      // effects: just make these files manually? then maybe simplify structure here, e.g. here just `effects: { log: { ok: (state, pl: number) => pl, ng: (state, pl: string) => pl.length } }`
+      // dispatchers: see ngrx_gen/foo/actions.ts (/ codegen.ts)
+      // difference with before: generation dynamic instead of codegen, ignoring Action types (`MyAction<T>` -> just `Action`). manually type dispatcher part afterwards.
+    },
+    domain
+  )
+);
 
 export let generated = genNgrx(obj);
 

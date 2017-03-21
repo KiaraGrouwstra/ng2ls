@@ -4,6 +4,7 @@ import { Action, ActionReducer } from '@ngrx/store';
 import { trace } from '../util';
 import { Obj } from '../models/models';
 import { ActionPair, MyAction } from '../actions/actions';
+import { Observable } from 'rxjs';
 
 export type TypedReducer<TState, T> = (state: TState, action: MyAction<T>) => TState;
 export type PayloadReducer<TState, T> = (state: TState, payload: T) => TState;

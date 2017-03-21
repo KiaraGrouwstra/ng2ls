@@ -4,6 +4,7 @@ import * as codegen from './codegen';
 import { writeFile } from './node-utils';
 import { Obj } from './models/models';
 import { mapSyncActions } from './actions/actions';
+import { combineSelectors } from './reducers/reducers';
 import { Observable } from 'rxjs';
 
 type Reducer<State, T> = (payload: T) => (state: State) => State;
@@ -105,14 +106,36 @@ export let genNgrx = R.mapObjIndexed((domain: any, k: string) =>
       },
       domain.effects || {}  
     );
+    let actions = mapSyncActions({[k]: actKeys});
+    
+    let selectorParts = partitionObj( R.is(Function), domain.selectors||{} );
+    let non_combined = R.map( (fn:any) => R.map(fn), selectorParts[0] );
+    let combined = R.map(
+      (multi) => {
+        return combineSelectors( <any>R.map( R.flip(R.prop)(non_combined), multi[0]), multi[1] )
+      },
+      selectorParts[1]  
+    );
     return {
-      actions: mapSyncActions({[k]: actKeys}),
+      actions,
       reducers: R.merge(domain.reducers, <any>R.mergeAll(R.values(reducerEff))),
-      // selectors
+      selectors: R.merge(non_combined, combined),
+      dispatchers: (store: Observable<any>&{dispatch: (pl: any)=>any}) => {
+        let dispatch = store.dispatch.bind(store);
+        return R.map(
+          (act: any) => {
+            return (pl: any) => dispatch( act(pl) );
+          },
+          actions  
+        );
+      }
     };
   }
 );
 
 export let generated = genNgrx(obj);
 
-
+function partitionObj( pred, ctx ) {
+  let pairs = R.toPairs( ctx );
+  return R.partition( <any>R.pipe(R.nth(1), pred), pairs ).map( R.fromPairs );
+};

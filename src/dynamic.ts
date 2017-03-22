@@ -6,6 +6,11 @@ import { Obj } from './models/models';
 import { mapSyncActions } from './actions/actions';
 import { combineSelectors } from './reducers/reducers';
 import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Http } from '@angular/http';
+import { makeEffect } from './effects/effects';
+import { Actions, Effect } from '@ngrx/effects';
+import 'reflect-metadata';
 
 type Reducer<State, T> = (payload: T) => (state: State) => State;
 
@@ -116,6 +121,44 @@ export let genNgrx = R.mapObjIndexed((domain: any, k: string) =>
       },
       selectorParts[1]  
     );
+    
+    @Injectable()
+    class DomainEffect {
+      constructor(
+        private http: Http,
+        private actions$: Actions,  
+      ) {
+        
+        R.forEachObjIndexed(
+          (eff: any, ek: string) => {
+            const getAction = (kk: string) => `${k}.${kk}`;
+            let { init, debounce, read, fallback, ng, ok, fn: [tp, f] } = eff;
+            let failAction = ng && getAction(`${k}Ng`);
+            let opts = { init, debounce, read, fallback, failAction };
+            let fn = makeEffect(<any>actions[ek], <any>actions[`${ek}Ok`], eff.fn, <any>opts );
+            let key = getAction(k) + '$';
+            Object.defineProperty(DomainEffect.prototype, key, {value: makeEffect} );
+            Object.defineProperty(
+              DomainEffect.prototype,
+              key,
+              (<any>Reflect).decorate(
+                [Effect],
+                DomainEffect.prototype,
+                key,
+                Object.getOwnPropertyDescriptor(
+                  DomainEffect.prototype,
+                  key  
+                )
+              )
+            );
+          },
+          domain.effects||{}  
+        );
+        
+      }
+    }
+    
+    
     return {
       actions,
       reducers: R.merge(domain.reducers, <any>R.mergeAll(R.values(reducerEff))),
@@ -128,7 +171,8 @@ export let genNgrx = R.mapObjIndexed((domain: any, k: string) =>
           },
           actions  
         );
-      }
+      },
+      effects: DomainEffect
     };
   }
 );

@@ -21,10 +21,10 @@ export let reducerFn = <TState>(types: ReducerMap<TState>, initialState: TState)
  )(types);
 
 export function reducerFnTuple<TState>(types: ReducerTuple<TState, any>[], initialState: TState): ActionReducer<TState> {
-  let obj = R.map(<T>([{ type, action }, reducerFn]: [ActionPair<T>, PayloadReducer<TState, T>]) =>
+  let obj = R.map(<T>([{ type, action }, reducerFn]: [ActionPair<T>, PayloadReducer<TState, T>]): [string, (s: TState, a:MyAction<T>) => TState] =>
       [type, (state: TState, act: MyAction<T>) => reducerFn(state, act.payload)]
   , types);
-  return reducerFn(obj, initialState);
+  return reducerFn(R.fromPairs(obj), initialState);
 }
 
 export type ReducerStructMap = {

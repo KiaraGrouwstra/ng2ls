@@ -39,11 +39,11 @@ export let pairs = {
   searchComplete: b<string>('Search Complete'),
 };
 
-const c = <T>() makeBoth(tp);
-export let pairs = {
-  search: c(<string>() => 'Search'),
-  searchComplete: c(<string>() => 'Search Complete'),
-};
+// const c = <T>makeBoth(tp);
+// export let pairs = {
+//   search: c(<string>() => 'Search'),
+//   searchComplete: c(<string>() => 'Search Complete'),
+// };
 
 // separating (automation needs heterogeneous map)
 export const Types = {

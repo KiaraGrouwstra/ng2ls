@@ -129,40 +129,56 @@ let obj/*: NgrxStruct*/ = {
 
 export class DomainEffectBase {}
 export function getEffClass(effects, actions, k): Type<DomainEffectBase> {
+  @Injectable()
   class DomainEffect implements DomainEffectBase {
     constructor(
       private http: Http,
       private actions$: Actions,  
     ) {
-      
       R.forEachObjIndexed(
         (eff: any, ek: string) => {
           const getAction = (kk: string) => `${k}.${kk}`;
-          let { init, debounce, read, fallback, ng, ok, fn: [tp, f] } = eff;
+          let { init, debounce, read, fallback, ng, ok, fn } = eff;
           let failAction = ng && getAction(`${k}Ng`);
           let opts = { init, debounce, read, fallback, failAction };
-          let fn = makeEffect(<any>actions[ek], <any>actions[`${ek}Ok`], eff.fn, <any>opts );
-          let key = getAction(k) + '$';
-          Object.defineProperty(DomainEffect.prototype, key, {value: makeEffect} );
-          Object.defineProperty(
-            DomainEffect.prototype,
-            key,
-            (<any>Reflect).decorate(
-              [Effect],
-              DomainEffect.prototype,
-              key,
-              Object.getOwnPropertyDescriptor(
-                DomainEffect.prototype,
-                key  
-              )
-            )
-          );
+          let fn2 = makeEffect.call(this, <any>{type: actionTp(k, ek), action:actions[ek]}, <any>actions[`${ek}Ok`], eff.fn, <any>opts );
+          let key = getAction(ek) + '$';
+          this[key] = fn2;
         },
         effects||{}  
       );
-      
     }
+    
   };
+    
+  R.forEachObjIndexed(
+    (eff: any, ek: string) => {
+      const getAction = (kk: string) => `${k}.${kk}`;
+      let key = getAction(ek) + '$';
+      console.warn('@eff', key);
+      Object.defineProperty(
+        DomainEffect.prototype,
+        key,
+        R.merge(
+          (<any>Reflect).decorate(
+            [Effect()],
+            DomainEffect.prototype,
+            key,
+            Object.getOwnPropertyDescriptor(
+              DomainEffect.prototype,
+              key 
+            )
+          ),
+          {
+            writable: true
+          }  
+        )
+      )
+    },
+    effects||{} 
+  );
+  
+  
   return DomainEffect;
 }
 
@@ -237,7 +253,7 @@ export let genNgrx = R.mapObjIndexed((domain: any, k: string) =>
           actions[k].actions
         );
       },
-      effects: getEffClass(domain.effects, actions, k)
+      effects: getEffClass(domain.effects, actions[k].actions, k)
     };
   }
 );

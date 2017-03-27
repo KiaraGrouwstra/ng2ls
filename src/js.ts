@@ -272,4 +272,4 @@ export let lookupOr = R.curry((o: Object, k: string) => lookup(o, k) || k);
 // // bypass Angular security (aimed at user-supplied data) for safe hardcoded values
 // const safe = R.objOf('changingThisBreaksApplicationSecurity');
 
-export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => Function.call(fn, thisArg, ...Array.prototype.slice.call(args));
+export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => fn.apply(thisArg, Array.prototype.slice.call(args));

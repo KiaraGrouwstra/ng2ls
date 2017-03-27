@@ -70,6 +70,25 @@ export let try_log: MethodDecorator = decorate(
   ]
 );
 
+export let tryThrow: MethodDecorator = decorate(
+  [
+    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function(): any|Promise<any> {
+      let ret = callFn(fn, this, arguments);
+      if ( ret instanceof Promise ) {
+        return (ret as Promise<any>).then(
+          undefined,
+          (e) => {
+            console.warn('try_log error', e.stack);
+            throw e;   
+          }  
+        );
+      } else {
+        return ret; 
+      }
+    })
+  ]
+);
+
 // wrapper for methods returning void, return if not all parameters are defined
 // this broke with Sweet and would be fully useless with minification, so use is discouraged.
 export let combine: MethodDecorator = decorate(

@@ -73,14 +73,20 @@ export let try_log: MethodDecorator = decorate(
 export let tryThrow: MethodDecorator = decorate(
   [
     decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function(): any|Promise<any> {
-      let ret = callFn(fn, this, arguments);
+      let onError = (e) => {
+        console.warn('try_log error', e.stack);
+        throw e;
+      }
+      let ret;
+      try {
+        ret = callFn(fn, this, arguments);
+      } catch(e) {
+        onError(e);
+      }
       if ( ret instanceof Promise ) {
         return (ret as Promise<any>).then(
           undefined,
-          (e) => {
-            console.warn('try_log error', e.stack);
-            throw e;   
-          }  
+          onError  
         );
       } else {
         return ret; 

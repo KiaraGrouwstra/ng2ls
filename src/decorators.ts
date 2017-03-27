@@ -12,14 +12,14 @@ function decMethod(
   wrapper = function<T, TFunction extends () => T>(fn: TFunction, parameters: any[], meta: DecoratorMeta<TFunction>): T { return callFn(fn, this, arguments); },
 ): MethodDecorator {
   return <T>(target: Object, key: string, descriptor: TypedPropertyDescriptor<T>, pars?: any[]) => {
-    const fn = R.prop('value')(descriptor); // descriptor.value
+    const fn = R.prop('value')(<any>descriptor); // descriptor.value
     if (typeof fn !== 'function') {
       throw new SyntaxError(`can only decorate methods, while ${key} is a ${typeof fn}!`);
     }
     return [{
       // ...descriptor,
       // ...R.omit(['value'], descriptor),
-      [k]: wrapper(fn, pars || [], { target, key, descriptor }),
+      [k]: wrapper(fn, pars || [], { target, key, descriptor: <any>descriptor }),
     }];
   };
 }
@@ -30,7 +30,7 @@ function decMethod(
 // ... this might hurt when switching to like Immutable.js though.
 export let typed: MethodDecorator = decorate(
   [
-    decMethod('value', (fn: Function, [from, to]: [Type<any>[], Type<any>]) => function() {
+    decMethod('value', (fn: Function|any, [from, to]: [Type<any>[], Type<any>]) => function() {
     for (let i = 0; i < from.length; i++) {
       let frm = from[i];
       let v = arguments[i];
@@ -59,7 +59,7 @@ export let fallback: MethodDecorator = decorate(
 // try/catch to log errors. useful in contexts with silent crash, e.g. promises / async functions without try/catch.
 export let try_log: MethodDecorator = decorate(
   [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function() {
+    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function(): any|never {
     try {
       return callFn(fn, this, arguments);
     }
@@ -93,7 +93,7 @@ export let tryThrow: MethodDecorator = decorate(
 // this broke with Sweet and would be fully useless with minification, so use is discouraged.
 export let combine: MethodDecorator = decorate(
   [
-    decMethod('value', (fn: Function, [allow_undef]: [Obj<boolean>]) => function() {
+    decMethod('value', (fn: Function|any, [allow_undef]: [Obj<boolean>]) => function() {
       // let names = /([^\(]+)(?=\))'/.exec(fn.toString()).split(',').slice(1);
       let names = fn.toString().split('(')[1].split(')')[0].split(/[,\s]+/);
       for (let i = 0; i < arguments.length; i++) {
@@ -102,7 +102,7 @@ export let combine: MethodDecorator = decorate(
           .replace(/_\d+$/, '')
           // fixes SweetJS suffixing names with e.g. _123. breaks functions already named .*_\d+, e.g. foo_123
           // do not minify while using this; functions wrapped in combine will no longer trigger.
-        if(R.isUndefined(v) && !(allow_undef || {})[name]) return; // R.isNil(v)
+        if(v===undefined && !(allow_undef || {})[name]) return; // R.isNil(v)
       }
       return callFn(fn, this, arguments);  //return
     })

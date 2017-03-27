@@ -16,11 +16,11 @@ function decMethod(
     if (typeof fn !== 'function') {
       throw new SyntaxError(`can only decorate methods, while ${key} is a ${typeof fn}!`);
     }
-    return [{
+    return {
       // ...descriptor,
       // ...R.omit(['value'], descriptor),
       [k]: wrapper(fn, pars || [], { target, key, descriptor: <any>descriptor }),
-    }];
+    };
   };
 }
 
@@ -31,13 +31,13 @@ function decMethod(
 export let typed: MethodDecorator = decorate(
   [
     decMethod('value', (fn: Function|any, [from, to]: [Type<any>[], Type<any>]) => function() {
-    for (let i = 0; i < from.length; i++) {
-      let frm = from[i];
-      let v = arguments[i];
-      if(frm && (R.isNil(v) || v.constructor != frm)) return (new to).valueOf();
-    }
-    return callFn(fn, this, arguments);
-  })
+      for (let i = 0; i < from.length; i++) {
+        let frm = from[i];
+        let v = arguments[i];
+        if(frm && (R.isNil(v) || v.constructor != frm)) return (new to).valueOf();
+      }
+      return callFn(fn, this, arguments);
+    })
   ]
 );
 

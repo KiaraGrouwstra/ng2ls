@@ -37,7 +37,12 @@ export type ReducerStructMap = {
 
 // make a reducer with some optimizations based on what reducer parameters are actually used
 export let reducerStructFn = <T>(struct: ReducerStructMap, initialState: Obj<State>): ActionReducer<Obj<T>> => {
-  let { fixed = {}, set = {}, update = {}, edit = {}, misc = {} } = struct;
+  // let { fixed = {}, set = {}, update = {}, edit = {}, misc = {} } = struct;
+  let fixed = struct.fixed || {};
+  let set = struct.set || {};
+  let update = struct.update || {};
+  let edit = struct.edit || {};
+  let misc = struct.misc || {};
   let reducer = <Obj<PayloadReducer<T, any>>> R.mergeAll([
     R.map((v: any) => (state: State, payload: any) => v)(fixed),
     R.map((fn: (payload: any) => State) => (state: State, payload: any) => fn(payload))(set),

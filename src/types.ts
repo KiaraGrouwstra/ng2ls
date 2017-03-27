@@ -1,29 +1,29 @@
 import { Observable } from 'rxjs';
 
-declare namespace Types {
+// declare namespace Types {
 
-  type Ord = number | string | boolean | Date;
-  type Primitive = string | number | boolean;
-  type List<T> = ArrayLike<T>;
-  type StringLike = string | StringRepresentable<string>;
-  type Prop = Primitive | StringRepresentable<Primitive>;
-  type Path = List<Prop>;
-  type Struct<T> = Obj<T> | List<T>;
-  type Pred<T> = (v: T) => boolean;
+  export type Ord = number | string | boolean | Date;
+  export type Primitive = string | number | boolean;
+  export type List<T> = ArrayLike<T>;
+  export type StringLike = string | StringRepresentable<string>;
+  export type Prop = Primitive | StringRepresentable<Primitive>;
+  export type Path = List<Prop>;
+  export type Struct<T> = Obj<T> | List<T>;
+  export type Pred<T> = (v: T) => boolean;
 
-  interface Type<T> extends Function {
+  export interface Type<T> extends Function {
     new (...args: any[]): T;
   }
 
-  interface Obj<T> {
+  export interface Obj<T> {
     [index: string]: T;
   }
 
-  interface NestedObj<T> extends Obj<T|NestedObj<T>> {}
-  interface NestedArr<T> extends Array<T|NestedArr<T>> {}
+  export interface NestedObj<T> extends Obj<T|NestedObj<T>> {}
+  export interface NestedArr<T> extends Array<T|NestedArr<T>> {}
   // interface NestedStruct<T> extends Struct<T|NestedStruct<T>> {}
 
-  interface StringRepresentable<T> {
+  export interface StringRepresentable<T> {
     toString(): T;
   }
 
@@ -35,6 +35,6 @@ declare namespace Types {
 
   export type Fn<T> = (...args: any[]) => T;
 
-}
+// }
 
-export = Types;
+// export = Types;

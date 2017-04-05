@@ -46,3 +46,5 @@ export let fromParams: (str: string) => Obj</*string*/any> = R.pipe(
   R.fromPairs,
   R.map(decodeURIComponent),
 );
+
+export const firstUpper = (s: string): string => R.toUpper(R.head(s)) + R.tail(s);

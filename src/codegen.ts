@@ -1,15 +1,14 @@
 import * as R from 'ramda';
 import { Obj } from './models/models';
 import { prettyStringify } from './node-utils';
-import { trace } from './util';
+import { trace, firstUpper } from './util';
 
 const renameBy = R.curry(<T>(fn: (v: any) => string, obj: Obj<T>): Obj<T> => <any>R.pipe(<any>R.toPairs, <any>R.map(R.adjust(fn, 0)), <any>R.fromPairs)(obj));
-const firstUpper = (s: string): string => R.toUpper(R.head(s)) + R.tail(s);
 const getNames: (o: Obj<any>) => string = R.pipe(R.keys, R.join(', '));
 const mapLines = (f: (v: any, k: string) => string) => R.pipe(R.mapObjIndexed(f), R.values, R.join('\n'));
 const getReducers = (domain, forActions = false) => {
   const processEffect = (effect, k: string) => R.pipe(
-    R.pick(['ok', 'ng']),
+    R.pick(['ok', 'fail']),
     renameBy(R.pipe(firstUpper, R.concat(k))),
     R.when(() => forActions, R.merge(<any>{ [k]: effect.fn })),
   )(effect);
@@ -67,8 +66,8 @@ export let dispatchers = (store: Observable<Actions>) => {
 export function effects(domain, name: string): string {
   let effectStr = mapLines((effect: any /*EffectMeta*/, k: string) => {
     const getAction = (k: string) => `${name}.${k}`;
-    let { init, debounce, read, fallback, ng, ok, fn: [tp, f] } = effect;
-    let failAction = ng && getAction(`${k}Ng`);
+    let { init, debounce, read, fallback, fail, ok, fn: [tp, f] } = effect;
+    let failAction = fail && getAction(`${k}Fail`);
     let opts = { init, debounce, read, fallback, failAction };
     let optStr = R.pipe(
       R.pickBy(R.complement(R.isNil)),

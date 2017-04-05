@@ -42,24 +42,24 @@ let obj/*: NgrxStruct*/ = {
         debounce: 0,
         // whether this is a read operation (ignore all but last)
         read: false,
-        // fallback value to use instead of emitting failure, define either this or `ng`. type matches fn.obs value , along with `ok` reducer param if no `fn.ok`.
+        // fallback value to use instead of emitting failure, define either this or `fail`. type matches fn.obs value , along with `ok` reducer param if no `fn.ok`.
         fallback: 0,
         // fn: effect function returning different possible results, param type matching `init` (if specified) and effect action payload.
         // obs: observable with the result (or error) for the given payload. result will be passed to `ok` reducer unless overridden by `fn.ok`.
         // ok: // optional value to pass as a parameter to the `ok` reducer, with matching type. if not specified, the default or value of `fn.obs` (if successful) is passed instead. used to e.g. pass the effect param to the failure error instead of the error (such as the book the user attempted to add/remove, but couldn't).
-        // ng: // optional value to pass as a parameter to the `ng` reducer, with matching type. if not specified, the error is passed instead. used to e.g. pass the effect param to the failure error instead of the error (such as the book the user attempted to add/remove, but couldn't).
+        // fail: // optional value to pass as a parameter to the `fail` reducer, with matching type. if not specified, the error is passed instead. used to e.g. pass the effect param to the failure error instead of the error (such as the book the user attempted to add/remove, but couldn't).
         fn: ['number', `(pl: number) => {
     let blah = pl;
     return {
       obs: Observable.from([0]),
-      ok: blah,
-      ng: 'bar',
+      ok: (v) => blah,
+      fail: (e) => 'bar',
     };
   }`],
         // reducer triggered on effect completion, with param type matching `fn.ok` (if available) or `fallback` + `fn.ok`.
         ok: ['number', `(state, pl: number) => pl`],
-        // reducer triggered on effect failure, define either this or `fallback`. param type matches `fn.ng` if available, otherwise `Error`.
-        ng: ['string', `(state, pl: string) => pl.length`],
+        // reducer triggered on effect failure, define either this or `fallback`. param type matches `fn.fail` if available, otherwise `Error`.
+        fail: ['string', `(state, pl: string) => pl.length`],
       },
       bar: {
         fn: ['number', `(pl: number) => ({ obs: Observable.from([0]) })`],

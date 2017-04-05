@@ -35,18 +35,19 @@ export function makeAction<T>(typeName: string, actionName: string): ActionCtor<
   };
 }
 
+
 export let make = {
-  actions: (name: string, actions: string[]): Obj<Type<Action>> => arr2obj(<T>(action: string) => makeAction<T>(name, action))(actions),
+  actions: (name: string, actions: string[]) => <Obj<Type<Action>>>arr2obj(<T>(action: string) => makeAction<T>(name, action))(actions),
   // ^ where to get this T?: http://orizens.com/wp/topics/simple-action-creators-for-ngrxstore-in-angular-2/
-  types: (name: string, actions: string[]): Obj<string> => R.fromPairs(actions.map((act: string): [string, string] => [act.toUpperCase(), actionTp(name, act)])),
+  // types: (name: string, actions: string[]): Obj<string> => R.fromPairs(actions.map((act: string): [string, string] => [act.toUpperCase(), actionTp(name, act)])),
 };
 // create actions for given types and a name
-export let actionFactory = (name: string, actions: string[]): ActionInfo => R.map((fn: (name: string, actions: string[]) => any) => fn(name, actions))(make);
+export let actionFactory = (name: string, actions: string[]) => <ActionInfo>R.map((fn: (name: string, actions: string[]) => any) => fn(name, actions))(make);
 
 // create actions for given types and a name
 export function effectfulAction(types: string[]): string[] {
   let reducer = (arr: string[], fn: (action: string) => string) => arr.concat(types.map(fn, types));
-  return R.values(derivedAction).reduce(reducer);
+  return R.values(derivedAction).reduce(reducer, []);
 }
 // create actions in batch
 export let mapSyncActions: (actionGroups: Obj<string[]>) => Obj<ActionInfo> =
@@ -64,7 +65,7 @@ export let makeBoth = (name: string) => <T>(action: string): ActionPair<T> => ({
 });
 // make pairs in batch. missing types!
 export let pairFactory = (name: string, actions: string[]): ActionPair<any>[] => actions.map(a => makeBoth(name)<any>(a));
-export let pairObjFactory = (name: string, actions: string[]): ActionPair<any>[] => arr2obj((a: string) => makeBoth(name)<any>(a))(actions);
+export let pairObjFactory = (name: string, actions: string[]) => <ActionPair<any>[]>arr2obj((a: string) => makeBoth(name)<any>(a))(actions);
 
 /*
 let baseline = class { type = 'shoe'; constructor(public payload: string) {} };

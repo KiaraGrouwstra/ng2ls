@@ -1,3 +1,5 @@
+declare var require;
+
 import * as R from 'ramda';
 let $ = require('jquery');
 import { Component, OpaqueToken } from '@angular/core';
@@ -185,8 +187,8 @@ export class ExtendableError extends Error {
     super(message);
     this.name = this.constructor.name;
     this.message = message;
-    if (typeof Error.captureStackTrace === 'function') {
-      Error.captureStackTrace(this, this.constructor);
+    if (typeof Error['captureStackTrace'] === 'function') {
+      Error['captureStackTrace'](this, this.constructor);
     } else {
       this.stack = (new Error(message)).stack;
     }
@@ -272,4 +274,5 @@ export let lookupOr = R.curry((o: Object, k: string) => lookup(o, k) || k);
 // // bypass Angular security (aimed at user-supplied data) for safe hardcoded values
 // const safe = R.objOf('changingThisBreaksApplicationSecurity');
 
-export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => Function.call(fn, thisArg, ...Array.prototype.slice.call(args));
+export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => fn.apply(thisArg, Array.prototype.slice.call(args));
+

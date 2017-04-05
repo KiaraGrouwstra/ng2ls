@@ -16,6 +16,7 @@ export let makeEffect = <T,U,V,W>(pair: ActionPair<T>, okAction: ActionCtor<U|V>
   failAction?: ActionCtor<Error|W>,
 } = {}) => {
   let { init, debounce, read, fallback, failAction } = opts;
+  // let actions$: Actions = this.actions$;
   let actions$: Actions = this.actions$;
   let filtered$: Observable<MyAction<T>> = actions$.ofType(pair.type); // could the exact action be inferred using a string-based lookup?
   let initialized$ = init ? filtered$.startWith(new (pair.action)(init)) : filtered$;
@@ -29,5 +30,5 @@ export let makeEffect = <T,U,V,W>(pair: ActionPair<T>, okAction: ActionCtor<U|V>
     let caught$ = failAction /*instanceof Object*/ ? created$.catch((error: Error) => Observable.of(new (<ActionCtor<Error|W>>failAction)(fail ? fail(error) : error))) : created$;
     return caught$;
   };
-  return read ? payload$.switchMap(lambda) : payload$.mergeMap(lambda);
+  return read ? payload$.switchMap(<any>lambda) : payload$.mergeMap(<any>lambda);
 }

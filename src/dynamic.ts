@@ -30,7 +30,9 @@ export let domainMeta = R.mapObjIndexed((struct, k) => R.pipe(
     rId: R.path,
     normalizer: L.rewrite,
   }),
-  x => R.assoc('localNav', (v) => [x.plural, x.lId(v), x.normalizer], x),
+  o => R.assoc('localNav', (v) => [o.plural, o.lId(v), o.normalizer], o),
+  o => R.assoc('set', (x) => L.set(o.localNav(x), x), o),
+  // o => R.assoc('remove', (x) => L.remove(o.localNav(x)), o),
 )(struct));
 
 export class DomainEffectBase {}

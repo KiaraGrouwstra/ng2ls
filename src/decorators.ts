@@ -9,7 +9,7 @@ type DecoratorMeta<T> = { target: Object, key: string | symbol, descriptor: Type
 // export let try_log: MethodDecorator = decorate(decMethod());
 function decMethod(
   k = 'value',
-  wrapper = function<T, TFunction extends () => T>(fn: TFunction, parameters: any[], meta: DecoratorMeta<TFunction>): T { return callFn(fn, this, arguments); },
+  wrapper = function<T, TFunction extends () => T>(fn: TFunction, parameters: any[]/*, meta: DecoratorMeta<TFunction>*/): T { return callFn(fn, this, arguments); },
 ): MethodDecorator {
   return <T>(target: Object, key: string, descriptor: TypedPropertyDescriptor<T>, pars?: any[]) => {
     const fn = R.prop('value')(<any>descriptor); // descriptor.value
@@ -19,7 +19,7 @@ function decMethod(
     return {
       // ...descriptor,
       // ...R.omit(['value'], descriptor),
-      [k]: wrapper(fn, pars || [], { target, key, descriptor: <any>descriptor }),
+      [k]: wrapper(fn, pars || []/*, { target, key, descriptor: <any>descriptor }*/),
     };
   };
 }
@@ -44,7 +44,7 @@ export let typed: MethodDecorator = decorate(
 // simpler guard, just a try-catch wrapper with default value
 export let fallback: MethodDecorator = decorate(
   [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [def]: [T], meta: DecoratorMeta<TFunction>) => function() {
+    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [def]: [T]/*, meta: DecoratorMeta<TFunction>*/) => function() {
     try {
       return callFn(fn, this, arguments);
     }
@@ -57,9 +57,9 @@ export let fallback: MethodDecorator = decorate(
 );
 
 // try/catch to log errors. useful in contexts with silent crash, e.g. promises / async functions without try/catch.
-export let try_log: MethodDecorator = decorate(
+export let tryLog: MethodDecorator = decorate(
   [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function(): any|never {
+    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|never {
     try {
       return callFn(fn, this, arguments);
     }
@@ -72,7 +72,7 @@ export let try_log: MethodDecorator = decorate(
 
 export let tryThrow: MethodDecorator = decorate(
   [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [], meta: DecoratorMeta<TFunction>) => function(): any|Promise<any> {
+    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|Promise<any> {
       let onError = (e) => {
         console.warn('try_log error', e.stack);
         throw e;

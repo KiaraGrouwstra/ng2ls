@@ -9,7 +9,7 @@ import { Type } from './types';
 let mergeMetadata = (metadataClass: Type<any>) => function(annotation: any) {
   return function (target: Function) {
     let parentTarget = Object.getPrototypeOf(target.prototype).constructor;
-    let parentAnns = Reflect.getMetadata('annotations', parentTarget);
+    let parentAnns = (<any>Reflect).getMetadata('annotations', parentTarget);
     if(R.keys(parentAnns).length) {
       let parentAnn = parentAnns[0];
       Object.keys(parentAnn).forEach(key => {
@@ -29,7 +29,7 @@ let mergeMetadata = (metadataClass: Type<any>) => function(annotation: any) {
       });
     }
     let metadata = new metadataClass(annotation);
-    Reflect.defineMetadata('annotations', [metadata], target);
+    (<any>Reflect).defineMetadata('annotations', [metadata], target);
   }
 }
 
@@ -44,10 +44,10 @@ import { isPresent } from "@angular/core/src/facade/lang";
 
 export function Inherit() {
     return (target: Function) => {
-        let metaInformations = Reflect.getOwnMetadata("annotations", target);
+        let metaInformations = (<any>Reflect).getOwnMetadata("annotations", target);
         if (metaInformations) {
             let parentTarget = Object.getPrototypeOf(target.prototype).constructor;
-            let parentMetaInformation = Reflect.getMetadata("annotations", parentTarget);
+            let parentMetaInformation = (<any>Reflect).getMetadata("annotations", parentTarget);
 
             for (let metaInformation of metaInformations) {
                 for (let parentMetadata of parentMetaInformation) {

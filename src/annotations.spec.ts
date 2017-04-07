@@ -2,6 +2,7 @@ import { ExtComp } from './annotations';
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Type } from './types';
 // import { Reflect, getMetadata } from 'reflect-metadata'; // /Reflect
+declare let describe, it, expect;
 
 const { OnPush, Default } = ChangeDetectionStrategy;
 
@@ -23,7 +24,7 @@ class AComp extends XComp {}
 })
 class BComp extends AComp {}
 
-let comp_meta = (cls: Type<Component>) => Reflect.getMetadata('annotations', cls)[0];
+let comp_meta = (cls: Type<Component>) => (<any>Reflect).getMetadata('annotations', cls)[0];
 
 let meta_x = comp_meta(XComp);
 let meta_a = comp_meta(AComp);
@@ -42,9 +43,9 @@ describe('extends', () => {
   })
 
   it('should inherit `@Input`s', () => {
-    expect(Reflect.getMetadata('propMetadata', XComp)['inp'][0].constructor).toEqual(Input);
-    expect(Reflect.getMetadata('propMetadata', AComp)['inp'][0].constructor).toEqual(Input);
-    expect(Reflect.getMetadata('propMetadata', BComp)['inp'][0].constructor).toEqual(Input);
+    expect((<any>Reflect).getMetadata('propMetadata', XComp)['inp'][0].constructor).toEqual(Input);
+    expect((<any>Reflect).getMetadata('propMetadata', AComp)['inp'][0].constructor).toEqual(Input);
+    expect((<any>Reflect).getMetadata('propMetadata', BComp)['inp'][0].constructor).toEqual(Input);
   })
 
 })

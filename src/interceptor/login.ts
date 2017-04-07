@@ -6,7 +6,7 @@ import { Interception } from './interceptor';
 // import { ACTION as A } from '../actions/actions';
 import * as R from 'ramda';
 
-// import { typeIn, typeNIn, toAction } from '../util';
+// import { typeIn, typeNIn, toAction } from '../js';
 
 // import { LoginView, HomeView } from '../pages';
 

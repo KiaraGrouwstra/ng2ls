@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Obj } from './models/models';
 import { prettyStringify } from './node-utils';
-import { trace, firstUpper } from './util';
+import { trace, firstUpper } from './js';
 
 const renameBy = R.curry(<T>(fn: (v: any) => string, obj: Obj<T>): Obj<T> => <any>R.pipe(<any>R.toPairs, <any>R.map(R.adjust(fn, 0)), <any>R.fromPairs)(obj));
 const getNames: (o: Obj<any>) => string = R.pipe(R.keys, R.join(', '));

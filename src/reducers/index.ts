@@ -3,7 +3,7 @@ import { Observable } from 'rxjs/Observable';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { Action, ActionReducer } from '@ngrx/store';
 // import * as fromRouter from '@ngrx/router-store';
-import { arr2obj, trace } from '../util';
+import { arr2obj, trace } from '../js';
 // import { environment } from '../../environments/environment';
 let environment = { production: false };
 import { Obj } from '../models/models'; // , House

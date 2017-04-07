@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { OpaqueToken, ValueProvider } from '@angular/core';
-import { arr2obj, type } from '../util';
+import { arr2obj, type } from '../js';
 import { Type, Obj, Action } from '../models/models';
 
 export interface MyAction<T> {

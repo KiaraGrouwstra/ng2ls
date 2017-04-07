@@ -1,6 +1,6 @@
 // import * as R from 'ramda';
 import { makeAction, actionFactory, effectfulAction, mapSyncActions, mapAsyncActions } from './actions';
-import { pojofy } from '../util';
+import { pojofy } from '../js';
 import { Action } from '@ngrx/store';
 import { Type } from '../models/models';
 let FOO = 'foo';

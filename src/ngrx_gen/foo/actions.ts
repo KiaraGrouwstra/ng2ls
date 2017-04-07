@@ -1,4 +1,4 @@
-import { type } from '../util';
+import { type } from '../js';
 import { Bar } from './models/foo';
 
 const tp = (k: string) => type('[foo] '+k);

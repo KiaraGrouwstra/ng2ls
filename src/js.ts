@@ -11,6 +11,7 @@ import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, String
 require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
 
+// convert an array to an object based on a lambda
 // make an object from an array with mapper function
 export let arr2obj = <T>(fn: (s: StringLike) => T) => (arr: StringLike[]): Obj<T> =>
     R.pipe(
@@ -47,7 +48,8 @@ export function fromQuery(str: string): Obj<string> {
   return R.fromPairs(params.map((s: string) => <[string, string]> s.split('=')));
 }
 
-// convert an object to a GET query string (part after `?`) -- replaces jQuery's param()
+// convert an object to a GET query string (part after `?`)
+// export let toQuery = jQuery.param;
 export function toQuery(obj: {}): string {
   let enc = R.map(decodeURIComponent)(obj);
   return R.toPairs(enc).map(R.join('=')).join('&');
@@ -94,7 +96,7 @@ export function fallback<T>(def: T, fn: Fn<T>): Fn<T> {  //fn: (...) => T
       return callFn(fn, this, arguments);
     }
     catch(e) {
-      console.warn('an error occurred, falling back to default value:', e);
+      console.warn('fallback error', e.stack);
       return def;
     }
   };
@@ -276,3 +278,65 @@ export let lookupOr = R.curry((o: Object, k: string) => lookup(o, k) || k);
 
 export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => fn.apply(thisArg, Array.prototype.slice.call(args));
 
+// convert an object to a list of string tokens
+export let tokenize: (obj: Object) => string[] = R.pipe(R.values, R.reduce((arr, val) => {
+  let mapper = (v: any) =>
+      R.is(String, v) ? v :
+      R.is(Array, v) ? R.chain(mapper)(v) :
+      R.is(Object, v) ? tokenize(v) : // _.isPlainObject
+      [];
+  return arr.concat(mapper(val));
+}, []));
+
+// check if a search string matches an object, based on any string tokens contained in both
+// potential performance improvement: pre-save tokenizations per object
+export let searchMatches = (search: string) => (obj: Object): boolean => {
+  let tokens = tokenize(obj);
+  return (search || '').split(/[\x00-\x2F]+/)
+      .every((q: string) => tokens.some((token: string) => new RegExp(q, 'i').test(token)));
+};
+
+// filter a collection by search matches to its string values
+export let filterNames = (arr: any[], search: string = '') => arr.filter(searchMatches(search));
+
+// coerces an action label string into a string literal, enabling typechecking (TS2.0 tagged union types), and ensuring uniqueness
+let typeCache: { [label: string]: boolean } = {};
+export function type<T>(label: T | ''): T {
+  if (typeCache[<string>label]) {
+    throw new Error(`Action type "${label}" is not unique"`);
+  }
+  typeCache[<string>label] = true;
+  return <T>label;
+}
+
+export let json = JSON.parse;
+// convert a class instance to a pojo
+export let pojofy = R.pipe(JSON.stringify, JSON.parse);
+
+// debug logging for FP (composition chains)
+export let trace = R.curry((tag: string, x: any) => {
+  console.log(tag, x);
+  return x;
+});
+
+// create a url with query params from an object
+export function makeUrl(url: string, pars = {}): string {
+  return R.keys(pars).length ? `${url}?${toQuery(pars)}` : url;
+}
+
+// convert query/hash params to an object
+export let fromParams: (str: string) => Obj</*string*/any> = R.pipe(
+  R.defaultTo(''),
+  R.split('&'),
+  R.map(
+    R.pipe(
+      R.split('='),
+      // maybe it's different in variable size array and fixed size array to type inferring
+      (parts: string[]):[any, any] => [parts[0], parts[1]]
+    )
+  ),
+  R.fromPairs,
+  R.map(decodeURIComponent),
+);
+
+export const firstUpper = (s: string): string => R.toUpper(R.head(s)) + R.tail(s);

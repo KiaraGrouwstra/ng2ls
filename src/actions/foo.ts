@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { makeAction, MyAction, make, actionTp, ActionCtor, makeBoth } from './actions';
 import { Obj } from '../models/models';
-import { type } from '../util';
+import { type } from '../js';
 const tp = 'Foo';
 
 // // Types:

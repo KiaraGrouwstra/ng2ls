@@ -26,5 +26,5 @@ export * from './reducers/reducers';
 export * from './services';
 // export * from './types';
 export * from './rx_helpers';
-export * from './util';
+export * from './js';
 export * from './test';

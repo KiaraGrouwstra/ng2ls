@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Type, Obj } from './types';
 import { callFn } from './js';
 
-let decorate = R.curry(Reflect.decorate);
+let decorate = R.curry((<any>Reflect).decorate);
 type DecoratorMeta<T> = { target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<T> };
 
 // decorate a class method (non get/set)

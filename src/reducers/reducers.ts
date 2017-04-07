@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { Action, ActionReducer } from '@ngrx/store';
-import { trace } from '../util';
+import { trace } from '../js';
 import { Obj } from '../models/models';
 import { ActionPair, MyAction } from '../actions/actions';
 import { Observable } from 'rxjs';

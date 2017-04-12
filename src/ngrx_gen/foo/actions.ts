@@ -25,7 +25,7 @@ export type Actions = add | subtract | log | logOk | logNg | bar | barOk;
 
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.foo = dispatchers(store);', then use the functions to dispatch actions
 export let dispatchers = (store: Observable<Actions>) => {
-  let do = store.dispatch.bind(store);
+  let do = ::store.dispatch;
   return {
      add     : (pl: number) => do(add     (pl)),
      subtract: (pl: number) => do(subtract(pl)),

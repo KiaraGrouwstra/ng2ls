@@ -1,0 +1,47 @@
+//- imports... still fails, see https://github.com/pugjs/pug/pull/1737
+//- import * as R from 'ramda';
+
+//- manual helpers:
+-
+  function toPairs(obj) {
+    var pairs = [];
+    for (var prop in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+        pairs[pairs.length] = [prop, obj[prop]];
+      }
+    }
+    return pairs;
+  }
+
+//- reusable
+
+mixin variable(name, expr)
+  template(ngFor [ngForOf]=`[${expr}]`)&attributes({[`let-${name}`]: true})
+    block
+
+- const awaiter = (expr) => `(${expr} && (${expr} | async))`
+
+mixin async(name, expr)
+  +variable(name, awaiter(expr))
+    block
+
+mixin vars_arr(pairs)
+  //- - var [[k,v], ...tail] = pairs
+  - var [k, v] = pairs[0]
+  - var tail = pairs.slice(1)
+  +variable(k,v)
+    - if (tail.length)
+      +vars_arr(tail)
+        block
+    - else
+      block
+
+mixin vars(obj)
+  +vars_arr(toPairs(obj))
+    block
+
+mixin asyncs(obj)
+  +vars_arr(toPairs(obj).map(([k,v]) => [k,awaiter(v)]))
+    block
+
+include ./ionic.pug

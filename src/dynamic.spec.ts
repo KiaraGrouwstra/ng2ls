@@ -4,7 +4,7 @@ import { Injectable, Type } from '@angular/core';
 import { Http } from '@angular/http';
 import { Action } from '@ngrx/store';
 import { Actions, Effect } from '@ngrx/effects';
-import { Obj } from './models/models';
+import { Obj, NgrxDomain } from './models/models';
 import { mapSyncActions, actionTp } from './actions/actions';
 import { combineSelectors, reducerFn } from './reducers/reducers';
 import { makeEffect } from './effects/effects';
@@ -17,7 +17,7 @@ interface Bar {
   y: string;
 }
 
-let foo = {
+let foo: NgrxDomain = {
   init: 0, // initial state value
   // reducer functions, with payload type explicit for now
   reducers: {

@@ -30,16 +30,13 @@ export function genPipe(fn: (v: any) => string, opts: { name: string } = { name:
  * create pipes with common metadata
  */
 export function pipesForMeta({ meta = {}, pipes }: PipeInfo): PipeClass[] {
-  return R.pipe(R.toPairs, R.map(<T>([k,v]: [string, T]) => genPipe(v, R.merge(meta, { name: k }))))(pipes);
+  return R.pipe((pipeObj: PipeObj) => R.toPairs(pipeObj), R.map(<T extends Transform>([k,v]: [string, T]) => genPipe(v, R.merge(meta, { name: k }))))(pipes);
 }
 
 /**
  * make pipes in groups (by metadata) then flatten
  */
-export let makePipes: (_x: PipeInfo[]) => PipeClass[] = R.pipe(
-  R.map(pipesForMeta),
-  R.flatten,
-);
+export let makePipes /* = R.chain(pipesForMeta)*/ = (pipeInfos: PipeInfo[]): PipeClass[] => R.chain(pipesForMeta, pipeInfos);
 
 /**
  * generate a pipe module given pipe infos and pre-existing pipes.

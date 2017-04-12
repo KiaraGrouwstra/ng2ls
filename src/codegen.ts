@@ -56,10 +56,10 @@ export let actions = { ${actionStr} };
 export type Actions = ${type};\n
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.${name} = dispatchers(store);', then use the functions to dispatch actions
 export let dispatchers = (store: Observable<Actions>) => {
-  let do = store.dispatch.bind(store);
+  let do = ::store.dispatch;
   return {\n${dispatcherStr}\n};
 `.substr(1);
-// export let dispatchers = (store: Observable<Actions>) => R.map(R.pipe(f, store.dispatch.bind(store)))(actions);\n
+// export let dispatchers = (store: Observable<Actions>) => R.map(R.pipe(f, ::store.dispatch))(actions);\n
 }
 // codeGenAction({ search: 'string', searchOk: 'string' }, 'Foo');
 

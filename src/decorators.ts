@@ -2,12 +2,12 @@ import * as R from 'ramda';
 import { Type, Obj } from './types';
 import { callFn } from './js';
 
-let decorate = R.curry((<any>Reflect).decorate);
-type DecoratorMeta<T> = { target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<T> };
+export let decorate = R.curry((<any>Reflect).decorate);
+export type DecoratorMeta<T> = { target: Object, key: string | symbol, descriptor: TypedPropertyDescriptor<T> };
 
 // decorate a class method (non get/set)
 // export let try_log: MethodDecorator = decorate(decMethod());
-function decMethod(
+export function decMethod(
   k = 'value',
   wrapper = function<T, TFunction extends () => T>(fn: TFunction, parameters: any[]/*, meta: DecoratorMeta<TFunction>*/): T { return callFn(fn, this, arguments); },
 ): MethodDecorator {
@@ -28,23 +28,20 @@ function decMethod(
 // value for input, it will return a default value of its output type
 // intercepts bad input values for a function so as to return a default output value
 // ... this might hurt when switching to like Immutable.js though.
-export let typed: MethodDecorator = decorate(
-  [
-    decMethod('value', (fn: Function|any, [from, to]: [Type<any>[], Type<any>]) => function() {
-      for (let i = 0; i < from.length; i++) {
-        let frm = from[i];
-        let v = arguments[i];
-        if(frm && (R.isNil(v) || v.constructor != frm)) return (new to).valueOf();
-      }
-      return callFn(fn, this, arguments);
-    })
-  ]
-);
+export let typed = <MethodDecorator> decorate([
+  decMethod('value', (fn: Function|any, [from, to]: [Type<any>[], Type<any>]) => function() {
+    for (let i = 0; i < from.length; i++) {
+      let frm = from[i];
+      let v = arguments[i];
+      if(frm && (R.isNil(v) || v.constructor != frm)) return (new to).valueOf();
+    }
+    return callFn(fn, this, arguments);
+  })
+]);
 
 // simpler guard, just a try-catch wrapper with default value
-export let fallback: MethodDecorator = decorate(
-  [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [def]: [T]/*, meta: DecoratorMeta<TFunction>*/) => function() {
+export let fallback = <MethodDecorator> decorate([
+  decMethod('value', <T, TFunction extends () => T>(fn: TFunction, [def]: [T]/*, meta: DecoratorMeta<TFunction>*/) => function() {
     try {
       return callFn(fn, this, arguments);
     }
@@ -53,13 +50,11 @@ export let fallback: MethodDecorator = decorate(
       return def;
     }
   })
-  ]
-);
+]);
 
 // try/catch to log errors. useful in contexts with silent crash, e.g. promises / async functions without try/catch.
-export let tryLog: MethodDecorator = decorate(
-  [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|never {
+export let tryLog = <MethodDecorator> decorate([
+  decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|never {
     try {
       return callFn(fn, this, arguments);
     }
@@ -67,37 +62,29 @@ export let tryLog: MethodDecorator = decorate(
       console.warn('try_log error', e.stack);
     }
   })
-  ]
-);
+]);
 
-export let tryThrow: MethodDecorator = decorate(
-  [
-    decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|Promise<any> {
-      let onError = (e) => {
-        console.warn('try_log error', e.stack);
-        throw e;
-      }
-      let ret;
-      try {
-        ret = callFn(fn, this, arguments);
-      } catch(e) {
-        onError(e);
-      }
-      if ( ret instanceof Promise ) {
-        return (ret as Promise<any>).then(
-          undefined,
-          onError  
-        );
-      } else {
-        return ret; 
-      }
-    })
-  ]
-);
+export let tryThrow = <MethodDecorator> decorate([
+  decMethod('value', <T, TFunction extends () => T>(fn: TFunction, []/*, meta: DecoratorMeta<TFunction>*/) => function(): any|Promise<any> {
+    let onError = (e) => {
+      console.warn('try_log error', e.stack);
+      throw e;
+    }
+    let ret;
+    try {
+      ret = callFn(fn, this, arguments);
+    } catch(e) {
+      onError(e);
+    }
+    return ret instanceof Promise ?
+        (ret as Promise<any>).then(undefined, onError) :
+        ret; 
+  })
+]);
 
 // wrapper for methods returning void, return if not all parameters are defined
 // this broke with Sweet and would be fully useless with minification, so use is discouraged.
-export let combine: MethodDecorator = decorate(
+export let combine = <MethodDecorator> decorate(
   [
     decMethod('value', (fn: Function|any, [allow_undef]: [Obj<boolean>]) => function() {
       // let names = /([^\(]+)(?=\))'/.exec(fn.toString()).split(',').slice(1);
@@ -116,7 +103,7 @@ export let combine: MethodDecorator = decorate(
 );
 
 // doesn't work with `setter`, since both would start out as identically-named regular methods
-export let getter: MethodDecorator = decorate([decMethod('get')]);
+export let getter = <MethodDecorator> decorate([decMethod('get')]);
 
 // doesn't work with `getter`, since both would start out as identically-named regular methods
-export let setter: MethodDecorator = decorate([decMethod('set')]);
+export let setter = <MethodDecorator> decorate([decMethod('set')]);

@@ -1,37 +1,71 @@
+import 'reflect-metadata';
 import * as R from 'ramda';
 import * as L from 'partial.lenses';
-import * as codegen from './codegen';
-// import { NgrxStruct } from './models/models';
-import { writeFile } from './node-utils';
-import { lookup, arr2obj, firstUpper } from './js';
-import { Obj } from './models/models';
-import { mapSyncActions, actionTp } from './actions/actions';
-import { combineSelectors } from './reducers/reducers';
 import { Observable } from 'rxjs';
 import { Injectable, Type } from '@angular/core';
 import { Http } from '@angular/http';
-import { makeEffect } from './effects/effects';
+import { Store, Action } from '@ngrx/store';
 import { Actions, Effect } from '@ngrx/effects';
-import 'reflect-metadata';
+
+import { makeEffect } from './effects/effects';
+import * as codegen from './codegen';
+import { SimpleSelector, CombinedSelector, NgrxDomain /*, NgrxStruct*/ } from './models/models';
+import { writeFile } from './node-utils';
+import { lookup, arr2obj, firstUpper } from './js';
+import { Obj } from './models/models';
+import { make, actionTp } from './actions/actions';
+import { combineSelectors, Reducer } from './reducers/reducers';
+
+export interface DomainBasic<T> {
+  // local id paths, used as an index
+  lId: string[];
+  // remote id paths, used as the URI identifier
+  rId: string[];
+  // local name
+  plural: string;
+  // associate tables: if this has `product_id`, add `product` as a `get`?
+  normalizer: (v: T) => any;
+}
+
+export interface DomainPlus<T> {
+  // changed
+  lId: (o: {}) => any;
+  rId: (o: {}) => any;
+  // unchanged
+  plural: string;
+  normalizer: (v: T) => any;
+  // new
+  localNav: (v: T) => any[]; // L Optic
+  set: Reducer<any>;
+  remove: Reducer<any>;
+  merge: Reducer<any>;
+}
 
 export let domainMeta = R.mapObjIndexed((struct, k) => R.pipe(
   R.merge({
-    // local id paths, used as an index
     lId: ['id'],
-    // remote id paths, used as the URI identifier
     rId: ['id'],
-    // local name
     plural: `${k}s`,
-    normalizer: R.identity, // associate tables: if this has `product_id`, add `product` as a `get`?
+    normalizer: R.identity,
   }),
   R.evolve({
     lId: R.path,
     rId: R.path,
     normalizer: L.rewrite,
   }),
-  o => R.assoc('localNav', (v) => [o.plural, o.lId(v), o.normalizer], o),
-  o => R.assoc('set', (x) => L.set(o.localNav(x), x), o),
-  // o => R.assoc('remove', (x) => L.remove(o.localNav(x)), o),
+  (o: DomainPlus<any>) => R.merge(o, {
+    localNav: (v) => [o.plural, o.lId(v), o.normalizer]
+  }),
+  (o: DomainPlus<any>) => R.merge(o, {
+    set: (x) => L.set(o.localNav(x), x),
+    remove: (x) => L.remove(o.localNav(x)),
+    merge: R.pipe(
+      /*R*/(xs: any[]) => xs.map(o.normalizer),
+      <(r: any[]) => Obj<any>> R.indexBy(o.lId),
+      R.flip(R.merge),
+      L.modify(o.plural),
+    ), // L.merge?
+  }),
 )(struct));
 
 export class DomainEffectBase {}
@@ -83,32 +117,58 @@ export function getEffClass(effects, actions, k): Type<DomainEffectBase> {
   return DomainEffect;
 }
 
+export interface NgrxInfo {
+  actions: Obj<Type<Action>>;
+  reducers: Obj<Reducer<any>>;
+  selectors: Obj<(state$: Observable<any>) => Observable<any>>;
+  effects: Type</*Effect*/any>;
+  dispatchers: (store: Store<any>) => Obj<(pl: any) => void>;
+  initialState: any;
+}
+
 // generate ngrx structure. difference with before:
 // - generation dynamic instead of codegen
 // - ignoring Action types (`MyAction<T>` -> just `Action`)
 // - manually type dispatcher part afterwards
-export let genNgrx = R.mapObjIndexed((domain: any, k: string) => {
-  let actions = mapSyncActions({ [k]: [
+export let genNgrx: (o: Obj<NgrxDomain<any>>) => Obj<NgrxInfo> = R.mapObjIndexed((domain: NgrxDomain<any>, k: string) => {
+  let actions: Obj<Type<Action>> = make.actions(k, <string[]> [
     ...Object.keys(domain.reducers),
-    ...R.flatten<string>(arr2obj(x => [`${x}Ok`, `${x}Fail`])(domain.effects),)
-  ] });
+    ...R.pipe(R.keys, R.chain(x => [x, `${x}Ok`, `${x}Fail`]))(domain.effects),
+  ]);
   let effReducers = R.mapObjIndexed((eff, k) =>
     R.pipe(
       R.filter(lookup(eff)),
       R.reduce(
-        (acc, okFail) => R.assoc(`${k}${firstUpper(okFail)}`, eff[okFail], acc),
+        (acc, okFail: string) => R.assoc(`${k}${firstUpper(okFail)}`, eff[okFail], acc),
         {}
       ),
     )(['ok', 'fail'])
   )(domain.effects || {});
   return {
     actions,
-    reducers: R.mergeAll([domain.reducers, ...R.values(effReducers)]),
-    // mapReducers?
-    selectors: R.map((selector) =>
-      !R.is(Array)(selector) ? R.map(selector) : ([deps, fn]) => combineSelectors(deps, fn)
+    reducers: <Obj<Reducer<any>>> R.mergeAll([domain.reducers, ...R.values(effReducers)]),
+    selectors: R.map((selector: CombinedSelector | SimpleSelector</*TState*/any>) =>
+      (selector instanceof Array ?
+        (([deps, fn]) => combineSelectors(deps, fn))(selector) :
+        /*R.map*/((fn: (v: any) => any) => (obs: Observable<any>) => obs.map(fn))(selector)
+      )
     )(domain.selectors),
     effects: getEffClass(domain.effects, actions, k),
-    dispatchers: (store: Observable<Actions>) => R.map((action) => (pl) => store.dispatch(action(pl)))(actions),
+    dispatchers: (store: Store<any>) => R.map((action: Type<Action>) => (pl) => store.dispatch(new action(pl)), actions),
+    initialState: domain.init,
   };
 });
+
+export let mergeNgrx = (o: { [k: string]: { actions, reducers, selectors, effects, dispatchers, initialState } }) => <{
+  actions: Obj<Obj<Type<Action>>>;
+  reducers: Obj<Obj<Reducer<any>>>;
+  selectors: Obj<Obj<(state$: Observable<any>) => Observable<any>>>;
+  effects: Obj<Type</*Effect*/any>>;
+  dispatchers: (store: Store<any>) => Obj<Obj<(pl: any) => void>>;
+  initialState: Obj<any>;
+}> R.pipe(
+  arr2obj((k: string) => R.pluck(k, o)),
+  R.evolve({ dispatchers: (dispatchers) => (store: Store<any>) => R.map((fn: Function) => fn(store), dispatchers) }),
+)(
+  ['actions', 'reducers', 'selectors', 'effects', 'dispatchers', 'initialState']
+);

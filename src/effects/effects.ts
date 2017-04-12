@@ -1,6 +1,7 @@
 import * as R from 'ramda';
-import { Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
+import { Response } from '@angular/http';
+import { Actions } from '@ngrx/effects';
 // import { of } from 'rxjs/observable/of';
 import { MyAction, ActionCtor, ActionPair } from '../actions/actions';
 
@@ -21,7 +22,7 @@ export let makeEffect = <T,U,V,W>(
 } = {}) => {
   let { init, debounce, read, fallback, failAction } = opts;
   // let actions$: Actions = this.actions$;
-  let actions$: /*Actions*/Observable<any> = this.actions$;
+  let actions$: Actions/*Observable<any>*/ = this.actions$;
   let filtered$: Observable<MyAction<T>> = actions$.ofType(pair.type);
   // ^ could the exact action be inferred using a string-based lookup?
   let initialized$ = init ? filtered$.startWith(new (pair.action)(init)) : filtered$;

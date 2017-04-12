@@ -1,14 +1,14 @@
 declare var require;
 
 import * as R from 'ramda';
-let $ = require('jquery');
+// let $ = require('jquery');
 import { Component, OpaqueToken } from '@angular/core';
 import { ValidatorFn, FormBuilder, FormControl, FormArray, FormGroup, AbstractControl } from '@angular/forms';
 // import { Maybe } from 'sanctuary';
 // let CryptoJS = require('crypto-js');
 import { Path, NestedArr, NestedObj, Obj, Pred, Type, ObjectMapper, Prop, StringLike, Fn } from './types';
 
-require('materialize-css/dist/js/materialize.min');
+// require('materialize-css/dist/js/materialize.min');
 // let YAML = require('yamljs');
 
 // convert an array to an object based on a lambda
@@ -62,7 +62,8 @@ export function toQuery(obj: {}): string {
 // value for input, it will return a default value of its output type
 // intercepts bad input values for a function so as to return a default output value
 // ... this might hurt when switching to like Immutable.js though.
-export function typed<T>(from: Type<any>[], to: Type<T>, fn: Fn<T>): Fn<T> { //T: (...) => to
+// export 
+function typed<T>(from: Type<any>[], to: Type<T>, fn: Fn<T>): Fn<T> { //T: (...) => to
   return function() {
     for (let i = 0; i < from.length; i++) {
       let frm = from[i];
@@ -74,7 +75,8 @@ export function typed<T>(from: Type<any>[], to: Type<T>, fn: Fn<T>): Fn<T> { //T
 }
 
 // wrapper for setter methods, return if not all parameters are defined
-export function combine<T>(fn: Fn<T>, allow_undef: {[key: string]: boolean} = {}): (v: T) => void {
+// export 
+function combine<T>(fn: Fn<T>, allow_undef: {[key: string]: boolean} = {}): (v: T) => void {
   return function() {
     // let names = /([^\(]+)(?=\))'/.exec(fn.toString()).split(',').slice(1);
     let names = fn.toString().split('(')[1].split(')')[0].split(/[,\s]+/);
@@ -90,7 +92,8 @@ export function combine<T>(fn: Fn<T>, allow_undef: {[key: string]: boolean} = {}
 }
 
 // simpler guard, just a try-catch wrapper with default value
-export function fallback<T>(def: T, fn: Fn<T>): Fn<T> {  //fn: (...) => T
+// export 
+function fallback<T>(def: T, fn: Fn<T>): Fn<T> {  //fn: (...) => T
   return function() {
     try {
       return callFn(fn, this, arguments);
@@ -103,7 +106,8 @@ export function fallback<T>(def: T, fn: Fn<T>): Fn<T> {  //fn: (...) => T
 }
 
 // just log errors. only useful in contexts with silent crash.
-export function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
+// export 
+function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
   return function() {
     try {
       return callFn(fn, this, arguments);
@@ -223,10 +227,10 @@ export function parameterizeStructure(val: any, iterableColl: Array<[Path, any[]
   }
 }
 
-// encody a message by base64
-export let encode = window.btoa;
-// decody a message by base64
-export let decode = window.atob;
+// // encody a message by base64
+// export let encode = window.btoa;
+// // decody a message by base64
+// export let decode = window.atob;
 
 export const MAX_ARRAY = 2**32-1;
 
@@ -279,7 +283,7 @@ export let lookupOr = R.curry((o: Object, k: string) => lookup(o, k) || k);
 export let callFn = <T>(fn: Fn<T>, thisArg: any, args: IArguments): T => fn.apply(thisArg, Array.prototype.slice.call(args));
 
 // convert an object to a list of string tokens
-export let tokenize: (obj: Object) => string[] = R.pipe(R.values, R.reduce((arr, val) => {
+export let tokenize: (obj: Object) => string[] = R.pipe((o: {}) => R.values(o), R.reduce((arr, val) => {
   let mapper = (v: any) =>
       R.is(String, v) ? v :
       R.is(Array, v) ? R.chain(mapper)(v) :

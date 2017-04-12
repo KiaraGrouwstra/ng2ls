@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+declare let require;
 const fs = require('fs');
 
 // write to a file, creating the containing folder if needed

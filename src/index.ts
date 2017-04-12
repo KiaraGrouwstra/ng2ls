@@ -28,3 +28,4 @@ export * from './services';
 export * from './rx_helpers';
 export * from './js';
 export * from './test';
+export * from './dynamic';

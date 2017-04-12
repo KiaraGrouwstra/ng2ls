@@ -1,0 +1,170 @@
+//- functions:
+- const templVar = (name) => ({ [`#${name}`]: Boolean(name) });
+- const opts = (name, attrs) => Object.assign({ formControlName: name, '[ngModelOptions]': name ? false : "{standalone: true}", [`#${name}`]: Boolean(name) }, attrs);
+
+//- variables (Pug):
+  //- form: name of the current form in the Angular model; default: 'form'.
+
+//- variables (Angular):
+  //- form: FormGroup, name customizable, see Pug variables.
+  //- tr: object containing translated messages
+  //- toKv: pipe to convert objects to arrays
+  //- app.trackByProp: trackBy method
+  //- viewCtrl: ViewController used to dismiss modals
+  //- app.navCtrl: NavController used to pop the view off
+
+//- mixins:
+
+//- general:
+
+//- mixin svg(name)
+  - var xml = fs.readFileSync(`../assets/svg/${name}.svg`)
+  div!= xml
+
+mixin loader(msg)
+  ion-card(text-center)&attributes(attributes)
+    ion-card-header=`{{ ${msg} }}`
+    ion-card-content
+      ion-row
+        ion-col(width-33 no-padding)
+        ion-col(width-33 no-padding)
+          //- include ../assets/svg/ring.svg
+        ion-col(width-33 no-padding)
+
+mixin cancel
+  //- start
+  ion-buttons( end )
+    button( ion-button (click)='viewCtrl ? viewCtrl.dismiss() : app.navCtrl.pop()' )
+      //-  showWhen='ios'
+      span( color='primary' )
+        | {{ tr.CANCEL }}
+      //- ion-icon( name='md-close' hideWhen='ios' )
+
+mixin head(label, top=false)
+  ion-header&attributes(attributes)
+    ion-navbar(hideBackButton='true')
+      - if (top)
+        button(ion-button ion-only tappable menuToggle)
+          ion-icon(name='menu')
+      ion-title=`{{ tr.${label} }}`
+      block
+      - if (!top)
+        +cancel
+
+mixin img(url)
+  img(cv-spare [src]=`(${url}) | allowUrl`)
+
+//- inputs
+
+//- mixin errors(ctrl)
+  div(*ngFor="let kv of tr.messages.FORM_ERRORS | toKv; trackBy: app.trackByProp('k')")
+    //- `ctrl.touched` doesn't work for the full form
+    p(color='danger' *ngIf=`${ctrl}?.dirty && ${ctrl}.hasError(kv.k)`)
+      | {{kv.v}}
+
+mixin inp(label, name=false, float=true, showerrors=true)
+  ion-item
+    ion-label(floating=float)=`{{ tr.${label} }}`
+    block
+  - if (name && showerrors)
+    //- +errors(`${form||'form'}.get("${name}")`)
+    errors([ctrl]=`${form||'form'}.get('${name}')`)
+
+mixin select(label, kvObj, name=false)
+  +inp(label, name)
+    ion-select([okText]='tr.alerts.ok' [cancelText]='tr.alerts.cancel')&attributes(opts(name, attributes))
+      ion-option(*ngFor=`let kv of ${kvObj} | toKv` [value]='kv.k')
+        | {{kv.v}}
+
+mixin radio(label, obj, name, fn)
+  ion-list(radio-group [(ngModel)]=name)
+    ion-list-header=`{{ tr.${label} }}`
+    ion-item(*ngFor=`let option of (${obj} | keys)`)
+      ion-label=`{{ ${obj}[option] || option }}`
+      ion-radio([value]='option' (ionSelect)=fn)
+
+mixin checkbox(label, name=false)
+  +inp(label, name, false)
+    ion-checkbox()&attributes(opts(name, attributes))
+
+mixin input(label, name=false, showerrors=true)
+  //- ion-label(color="primary")
+  +inp(label, name, true, showerrors)
+    ion-input(type=attributes.type||'text')&attributes(opts(name, attributes))
+
+mixin datetime(label, name=false)
+  +inp(label, name)
+    ion-datetime([displayFormat]='tr.DISPLAYFORMAT' [pickerFormat]='tr.PICKERFORMAT')&attributes(opts(name, attributes))
+
+//- user
+
+mixin header(k)
+  ion-list&attributes(attributes)
+    ion-list-header=`{{ (tr.messages.company.${k} || tr.messages.${k} || tr.${k} || '${k}') | uppercase }}`
+    block
+
+mixin label(k)
+  ion-row
+    ion-col=`{{ (tr.messages.company.${k} || tr.messages.${k} || tr.${k} || '${k}') | uppercase }}`
+    ion-col=`{{ company.${k} }}`
+  //- +header(k)
+    ion-item=`{{ company.${k} }}`
+
+mixin list(k, slide=false)
+  +header(k)(*ngIf=`company.${k}?.length`)
+    - if (slide)
+      ion-item-sliding(#slide *ngFor=`let item of company.${k}`)
+        block
+    - else
+      ion-item(*ngFor=`let item of company.${k}`)
+        block
+
+//- contact list
+
+mixin labelsCard(k='card')
+  h2=`{{ ${k} | nameCloud }}`
+  h3=`{{ app.isMe(${k}) ? tr.ME : ${k} | describe }}`
+
+mixin labelsPerson
+  h2
+    | {{ person | namePerson }}
+  h3
+    | {{ app.isMe(person.card) ? tr.ME : person | describePerson }}
+
+mixin preview
+  ion-item((click)='app.pushCard(person)')
+    ion-avatar(item-left)
+      +img('person.card | getPic')
+    +labelsPerson
+  ion-item-options(side='right')
+    +slide_btn('app.pushCard(person)', 'MORE', 'ios-more')
+    +slide_btn('', 'EMAIL', 'mail', 'primary')(*ngIf='person.card.emails[0]?.email' href='mailto:{{ person.card.emails[0]?.email }}')
+    +slide_btn('app.sms(person.card.numbers[0]?.number)', 'TEXT', 'text', 'primary')(*ngIf='person.card.numbers[0]?.number')
+    +slide_btn('', 'CALL', 'call', 'secondary')(*ngIf='person.card.numbers[0]?.number' href='tel:{{ person.card.numbers[0]?.number | phoneUrl:app.myCountry }}')
+    +slide_btn('app.delete(person)', 'DELETE', 'archive', 'danger')
+
+//- vcard
+
+mixin slider(coll, label, k)
+  ion-item-sliding(#slide *ngFor=`let item of ${coll}`)
+    ion-item
+      ion-label=`{{ ${label} }}`
+      block
+    ion-item-options(side='right')
+      +slide_btn(`removeById.${k}(item.id)`, 'DELETE', 'archive', 'danger')
+
+mixin add(k)
+  ion-item
+    button(block ion-button color='secondary' (click)=`add.${k}()`)
+      | {{ tr.ADD }}
+
+//- buttons
+
+mixin slide_btn(action, label, icon, color='light')
+  - el = attributes.href ? 'a' : 'button'
+  #{el}(ion-button icon-left color=color (click)=`slide.close(); ${action}`)&attributes(attributes)
+    ion-icon(name=icon)
+    span=`{{ tr.${label} }}`
+
+mixin btn_swap(k)
+  +slide_btn(`replace("${k}", item)`, 'REPLACE', 'swap', 'primary')

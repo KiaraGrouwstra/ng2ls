@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions, RequestMethod } from '@angular/http';
 import { pathProxy } from 'proxy-dsl';
-import { makeUrl, lookup, arr2obj } from './js';
+import { makeUrl, lookup, arr2obj } from '../js';
 
 const METHODS = {
   get: RequestMethod.Get,
@@ -14,6 +14,10 @@ const METHODS = {
   head: RequestMethod.Head,
   options: RequestMethod.Options,
 };
+
+export interface ReqOpts {
+  query?: { [k: string]: string };
+}
 
 // a service for dealing with JSON apis. set the domain/headers, type the api (-> $fooId for dynamic segments), then use with { fooId } to pass it in.
 
@@ -32,7 +36,7 @@ export class ApiService<T> {
     let url_ = makeUrl(url, query);
     // assert.ok(url_);
     let headers = this.headers(); // this.buildRequestOptions();
-    let options = new RequestOptions({ headers });
+    let options = new RequestOptions({ headers: new Headers(headers) });
     const BODY_METHODS = ['post', 'put', 'patch']; // get/delete/head
     let pars = R.contains(k, BODY_METHODS) ? [url_, body, options]: [url_, options];
     return this.http[k](...pars)
@@ -44,17 +48,17 @@ export class ApiService<T> {
     // // TODO: better judge whether the issue merits a retry
   }
 
-  req = R.map((fn: (url: string, bodyOrQuery: {}, opts: {}) => Observable<any>) => R.pipe(fn, R.map(y => y.json())))(
+  req = R.map(<F extends (url: string, bodyOrQuery: {}, opts: {}) => Observable<Response>>(fn: F) => R.pipe(fn, /*R*/(obs: Observable<Response>) => obs.map((resp: Response) => resp.json())))(
     R.merge(
-      arr2obj((k: string) => (url: string, pars = {}, opts = {}) => this.fetch(k, `${this.domain}/${url}`, null,       pars))(['get','delete','head','options']),
-      arr2obj((k: string) => (url: string, pars = {}, opts = {}) => this.fetch(k, `${this.domain}/${url}`, pars, opts.query))(['put','post','patch']),
+      arr2obj((k: string) => (url: string, pars = {}, opts: ReqOpts = {}) => this.fetch(k, `${this.domain}/${url}`, null,       pars))(['get','delete','head','options']),
+      arr2obj((k: string) => (url: string, pars = {}, opts: ReqOpts = {}) => this.fetch(k, `${this.domain}/${url}`, pars, opts.query))(['put','post','patch']),
     )
   )
 
-  api: T = pathProxy((segments: Array<string|number>, pars: Object, opts: Object) => {
-    let [urlPath, verb] = [R.init(segments), R.last(segments)];
+  api: T = pathProxy((segments: Array<string|number>, pars: { [k: string]: string }, opts: Object) => {
+    let [urlPath, verb]: [Array<string|number>, string] = [R.init(segments), <string>R.last(segments)];
     let dynamicSegments = R.pipe(R.filter(R.test(/^$/)), R.map(R.tail))(urlPath);
-    let [pathPars, miscPars] = R.addIndex(R.partition)((v, k) => R.contains(k, dynamicSegments))(pars);
+    let [pathPars, miscPars] = R.addIndex(R.partition)((v, k) => R.contains(k, <string[]>dynamicSegments))(pars);
     let mappedPath = urlPath.map(R.when(R.test(/^$/), lookup(pathPars)));
     return this.req[verb](mappedPath.join('/'), miscPars, opts);
   });

@@ -15,6 +15,20 @@ const METHODS = {
   options: RequestMethod.Options,
 };
 
+export type Rest<T> = {
+  get: () => Observable<T[]>,
+  post: (v: T) => Observable<T>,
+  // TODO: allow extending
+} & {
+  [k: string]: {
+    get: () => Observable<T>,
+    put: (v: T) => Observable<T>,
+    delete: () => Observable<void>,
+    patch: (v: Partial<T>) => Observable<T>,
+    // TODO: allow extending
+  },
+}
+
 export interface ReqOpts {
   query?: { [k: string]: string };
 }

@@ -1,3 +1,4 @@
+import 'reflect-metadata';
 // import 'rxjs/add/operator/switchMap';
 // import 'rxjs/add/operator/let';
 // import 'rxjs/add/operator/take';

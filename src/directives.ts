@@ -1,13 +1,11 @@
 import * as R from 'ramda';
 import { Directive, Renderer, ElementRef, ViewContainerRef, EmbeddedViewRef, ViewRef, TemplateRef, DoCheck, KeyValueDiffer, KeyValueDiffers, KeyValueChangeRecord, ChangeDetectorRef, DebugNode } from '@angular/core';
-import { ViewContainer } from '@angular/core/src/linker/view_container';
-import { ViewContainerRef_ } from '@angular/core/src/linker/view_container_ref';
-import { DomElementSchemaRegistry } from '@angular/compiler/src/schema/dom_element_schema_registry';
+// import { ViewContainer } from '@angular/core/src/linker/view_container';
+import { DomElementSchemaRegistry } from '@angular/compiler/src/schema/dom_element_schema_registry.d';
 import { Component } from '@angular/core';
-import { AppView } from '@angular/core/src/linker/view';
-import { isPresent, isBlank } from '@angular/core/src/facade/lang';
+import { truthy, falsy } from './js';
 import { evalExpr, transformWhile, print } from './js';
-import { NgForRow } from '@angular/common/src/directives/ng_for';
+import { NgForOfContext } from '@angular/common/src/directives/ng_for_of.d';
 // import { ExtDir } from './annotations';
 import { Obj, Type } from './types';
 // export { ObjDirective };
@@ -48,7 +46,7 @@ export class ObjDirective implements DoCheck {
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
   _setItem(name: string, val: string|null): void {};
 
   // constructor(
@@ -64,7 +62,7 @@ export class ObjDirective implements DoCheck {
 
   set attributes(obj: {[key: string]: string}) {
     this._obj = obj;
-    if (isBlank(this._differ) && isPresent(obj)) {
+    if (falsy(this._differ) && truthy(obj)) {
       this._differ = this._differs.find(obj).create(this._cdr); // <ChangeDetectorRef>null
     }
   }
@@ -76,10 +74,10 @@ export class ObjDirective implements DoCheck {
   // ngDoCheck() {};
   ngDoCheck() {
     let obj = this._obj;
-    if (isPresent(this._differ)) {
+    if (truthy(this._differ)) {
       var changes = this._differ.diff(obj);
-      if (isPresent(changes)) {
-        changes.forEachRemovedItem((record: KeyValueChangeRecord) => {
+      if (truthy(changes)) {
+        changes.forEachRemovedItem((record: KeyValueChangeRecord<string, string>) => {
           this._setItem(record.key, null);
         });
       }
@@ -98,7 +96,7 @@ export class ObjDirective implements DoCheck {
 //   _context: Object;
 //   _extra: {};
 //   _obj: Obj<string>;
-//   _differ: KeyValueDiffer;
+//   _differ: KeyValueDiffer<string, string>;
 //   _setItem(name: string, val: string|null): void {};
 
 //   // constructor() {
@@ -112,10 +110,10 @@ export class ObjDirective implements DoCheck {
 
 //   ngDoCheck() {
 //     let obj = this._obj;
-//     if (isPresent(this._differ)) {
+//     if (truthy(this._differ)) {
 //       var changes = this._differ.diff(obj);
-//       if (isPresent(changes)) {
-//         changes.forEachRemovedItem((record: KeyValueChangeRecord) => {
+//       if (truthy(changes)) {
+//         changes.forEachRemovedItem((record: KeyValueChangeRecord<string, string>) => {
 //           this._setItem(record.key, null);
 //         });
 //       }
@@ -157,22 +155,22 @@ export class SetAttrs extends ObjDirective {
   }
 
   ngDoCheck() {
-    if (isPresent(this._differ)) {
+    if (truthy(this._differ)) {
       var changes = this._differ.diff(this._obj);
-      if (isPresent(changes)) {
+      if (truthy(changes)) {
         this._applyChanges(changes);
       }
     }
   }
 
   public _applyChanges(changes: any): void {
-    changes.forEachAddedItem((record: KeyValueChangeRecord) => {
+    changes.forEachAddedItem((record: KeyValueChangeRecord<string, string>) => {
       this._setItem(record.key, record.currentValue);
     });
-    changes.forEachChangedItem((record: KeyValueChangeRecord) => {
+    changes.forEachChangedItem((record: KeyValueChangeRecord<string, string>) => {
       this._setItem(record.key, record.currentValue);
     });
-    changes.forEachRemovedItem((record: KeyValueChangeRecord) => {
+    changes.forEachRemovedItem((record: KeyValueChangeRecord<string, string>) => {
       this._setItem(record.key, ''); // null
     });
   }
@@ -180,9 +178,9 @@ export class SetAttrs extends ObjDirective {
 }
 
 // get the context for a viewContainer -- for e.g. `_View_FieldComp5` first go up to `_View_FieldComp0`.
-function getContext(view: ViewContainerRef_ /*ViewContainerRef*/): Obj<any> {
-  let condition = (x: AppView<any>) => R.contains(x.context.constructor)([Object, NgForRow]);
-  return transformWhile(condition, (y: AppView<any>) => y.parentView, (<ViewContainer> view['_element']).parentView).context;
+function getContext(view: ViewContainerRef /*ViewContainerRef*/): Obj<any> {
+  let condition = (x: EmbeddedViewRef<any>) => R.contains(x.context.constructor)([Object, NgForOfContext]);
+  return transformWhile(condition, (y: EmbeddedViewRef<any>) => y['parentView'], view.element['parentView']).context;
 }
 
 // dynamically bind properties/attributes (cf. SetAttrs), using strings evaluated in the component context
@@ -204,7 +202,7 @@ export class DynamicAttrs extends ObjDirective { // DynamicDirective(ObjDirectiv
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
 
   constructor(
     // ObjDirective
@@ -213,7 +211,7 @@ export class DynamicAttrs extends ObjDirective { // DynamicDirective(ObjDirectiv
     public _renderer: Renderer,
     // this
     public _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef_,
+    _viewContainer: ViewContainerRef,
   ) {
     super();
     // ObjDirective
@@ -245,7 +243,7 @@ export class AppliesDirective extends ObjDirective { // DynamicDirective(ObjDire
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
 
   constructor(
     // ObjDirective
@@ -254,7 +252,7 @@ export class AppliesDirective extends ObjDirective { // DynamicDirective(ObjDire
     public _renderer: Renderer,
     // this
     public _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef_,
+    _viewContainer: ViewContainerRef,
   ) {
     super();
     // ObjDirective
@@ -284,7 +282,7 @@ export class AppliesExprDirective extends ObjDirective { // DynamicDirective(Obj
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
 
   constructor(
     // ObjDirective
@@ -293,7 +291,7 @@ export class AppliesExprDirective extends ObjDirective { // DynamicDirective(Obj
     public _renderer: Renderer,
     // this
     public _registry: DomElementSchemaRegistry,
-    _viewContainer: ViewContainerRef_,
+    _viewContainer: ViewContainerRef,
   ) {
     super();
     // ObjDirective
@@ -324,7 +322,7 @@ export class DynamicStyle extends ObjDirective { // DynamicDirective(ObjDirectiv
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
 
   constructor(
     // ObjDirective
@@ -332,7 +330,7 @@ export class DynamicStyle extends ObjDirective { // DynamicDirective(ObjDirectiv
     public _elRef: ElementRef,
     public _renderer: Renderer,
     // this
-    _viewContainer: ViewContainerRef_,
+    _viewContainer: ViewContainerRef,
   ) {
     super();
     // ObjDirective
@@ -362,7 +360,7 @@ export class DynamicClass extends ObjDirective { // DynamicDirective(ObjDirectiv
   _context: Object;
   _extra: {};
   _obj: Obj<string>;
-  _differ: KeyValueDiffer;
+  _differ: KeyValueDiffer<string, string>;
 
   constructor(
     // ObjDirective
@@ -370,7 +368,7 @@ export class DynamicClass extends ObjDirective { // DynamicDirective(ObjDirectiv
     public _elRef: ElementRef,
     public _renderer: Renderer,
     // this
-    _viewContainer: ViewContainerRef_,
+    _viewContainer: ViewContainerRef,
   ) {
     super();
     // ObjDirective

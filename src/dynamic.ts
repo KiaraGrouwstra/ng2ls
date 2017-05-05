@@ -1,10 +1,9 @@
-import 'reflect-metadata';
 import * as R from 'ramda';
 import * as L from 'partial.lenses';
 import { Observable } from 'rxjs';
 import { Injectable, Type } from '@angular/core';
 import { Http } from '@angular/http';
-import { Store, Action } from '@ngrx/store';
+import { Store, Action, combineReducers } from '@ngrx/store';
 import { Actions, Effect } from '@ngrx/effects';
 
 import { makeEffect } from './effects/effects';
@@ -93,7 +92,7 @@ export function getEffClass(effects, actions, k): Type<DomainEffectBase> {
   R.forEachObjIndexed((eff: any, ek: string) => {
     const getAction = (kk: string) => `${k}.${kk}`;
     let key = getAction(ek) + '$';
-    console.warn('@eff', key);
+    // console.warn('@eff', key);
     Object.defineProperty(
       DomainEffect.prototype,
       key,
@@ -161,14 +160,17 @@ export let genNgrx: (o: Obj<NgrxDomain<any>>) => Obj<NgrxInfo> = R.mapObjIndexed
 
 export let mergeNgrx = (o: { [k: string]: { actions, reducers, selectors, effects, dispatchers, initialState } }) => <{
   actions: Obj<Obj<Type<Action>>>;
-  reducers: Obj<Obj<Reducer<any>>>;
+  reducers: Obj<Reducer<any>>;
   selectors: Obj<Obj<(state$: Observable<any>) => Observable<any>>>;
   effects: Obj<Type</*Effect*/any>>;
   dispatchers: (store: Store<any>) => Obj<Obj<(pl: any) => void>>;
   initialState: Obj<any>;
 }> R.pipe(
   arr2obj((k: string) => R.pluck(k, o)),
-  R.evolve({ dispatchers: (dispatchers) => (store: Store<any>) => R.map((fn: Function) => fn(store), dispatchers) }),
+  R.evolve({
+    dispatchers: (dispatchers) => (store: Store<any>) => R.map((fn: Function) => fn(store), dispatchers),
+    reducers: R.map(combineReducers),
+  }),
 )(
   ['actions', 'reducers', 'selectors', 'effects', 'dispatchers', 'initialState']
 );

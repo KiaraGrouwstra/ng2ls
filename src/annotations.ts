@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { Component, Directive, Pipe } from '@angular/core';
 import { Type } from './types';
+import { falsy } from './js';
 
 // annotations: decorators that add metadata, rather than say mutating the target
 
@@ -39,7 +40,6 @@ export let ExtPipe = mergeMetadata(Pipe);
 
 // https://github.com/angular/angular/issues/13387#issuecomment-269506581
 
-import { isPresent } from "@angular/core/src/facade/lang";
 // import { IDescribeReflect as DescribeReflect } from "../declarations/IDescribeReflect";
 
 export function Inherit() {
@@ -53,7 +53,7 @@ export function Inherit() {
                 for (let parentMetadata of parentMetaInformation) {
                     if (parentMetadata.constructor === metaInformation.constructor) {
                         Object.keys(parentMetadata).forEach(key => {
-                            if (!isPresent(metaInformation[key])) {
+                            if (falsy(metaInformation[key])) {
                                 console.log(`Inheriting key: $(key) with value: $(parentMetadata[key])`);
                                 metaInformation[key] = parentMetadata[key];
                             }

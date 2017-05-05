@@ -12,7 +12,7 @@ export type Device = {};
 
 // import { compose } from '@ngrx/core';
 // protect state from mutation (-> error)
-import { storeFreeze } from 'ngrx-store-freeze';
+// import { storeFreeze } from 'ngrx-store-freeze';
 // Object<ReducerFn> -> ReducerFn<Object<ReducerFn>>
 import { combineReducers } from '@ngrx/store';
 
@@ -61,9 +61,10 @@ let reducers = mapReducers({
   ], {}],
 });
 
-const developmentReducer = R.pipe(combineReducers, storeFreeze)(reducers);
-const productionReducer = combineReducers(reducers);
-export let reducer: ActionReducer<State> = environment.production ? productionReducer : developmentReducer;
+// const developmentReducer = R.pipe(combineReducers, storeFreeze)(reducers);
+// const productionReducer = combineReducers(reducers);
+// export let reducer: ActionReducer<State> = environment.production ? productionReducer : developmentReducer;
+export let reducer: ActionReducer<State> = combineReducers(reducers);
 
 let selectors = (k: string) => R.map(R.prop(k));
 

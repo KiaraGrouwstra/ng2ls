@@ -51,7 +51,7 @@ export function fromQuery(str: string): Obj<string> {
 // convert an object to a GET query string (part after `?`)
 // export let toQuery = jQuery.param;
 export function toQuery(obj: {}): string {
-  let enc = R.map(decodeURIComponent)(obj);
+  let enc = R.map(encodeURIComponent)(obj);
   return R.toPairs(enc).map(R.join('=')).join('&');
 }
 

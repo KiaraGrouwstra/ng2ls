@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import { Component, ViewChild, ElementRef, DebugElement } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { fakeAsync, tick, flushMicrotasks, TestBed, ComponentFixture } from '@angular/core/testing';
-import { dispatchEvent } from '@angular/platform-browser/testing/browser_util';
+import { fakeAsync, tick, flushMicrotasks, TestBed, ComponentFixture } from '@angular/core/testing.d';
+import { dispatchEvent } from '@angular/platform-browser/testing/src/browser_util.d';
 import { Type } from './types';
 
 export interface CompTestMeta<T> {

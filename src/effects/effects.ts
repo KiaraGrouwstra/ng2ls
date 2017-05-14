@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { Response } from '@angular/http';
 import { Actions } from '@ngrx/effects';
 // import { of } from 'rxjs/observable/of';
@@ -9,7 +9,7 @@ export let unJson = <T>(resp: Response): T => resp.json();
 // export let always = R.pipe(R.always, Observable.of);
 
 // context dependencies: this.actions$: Actions;
-export let makeEffect = <T,U,V,W>(
+export function makeEffect<T,U,V,W>(
   pair: ActionPair<T>,
   okAction: ActionCtor<U|V>,
   mapper: (v: T) => Observable<U> | { obs: Observable<U>, ok?: (v: U) => V, fail?: (e: Error) => W },
@@ -19,7 +19,7 @@ export let makeEffect = <T,U,V,W>(
     read?: boolean,  // cancel previous results (good for read: GET, not for write: POST/PUT/PATCH/DELETE)
     fallback?: U,  // default value rather than failure
     failAction?: ActionCtor<Error|W>,
-} = {}) => {
+} = {}) {
   let { init, debounce, read, fallback, failAction } = opts;
   // let actions$: Actions = this.actions$;
   let actions$: Actions/*Observable<any>*/ = this.actions$;
@@ -32,8 +32,8 @@ export let makeEffect = <T,U,V,W>(
   let lambda = (v: T) => {
     let res = mapper(v);
     let obs: Observable<U>;
-    let ok: (v: U) => V;
-    let fail: (e: Error) => W;
+    let ok: ((v: U) => V) | undefined;
+    let fail: ((e: Error) => W) | undefined;
     if (res instanceof Observable) {
       obs = res;
     } else {

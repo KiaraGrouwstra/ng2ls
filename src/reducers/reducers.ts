@@ -15,7 +15,7 @@ export type PointFree = <T>(state: T) => T;
 export type Reducer<T> = (pl: T) => PointFree;
 
 // pick the right reducer by action type, or default to the current state
-export let reducerFn = <TState>(types: ReducerMap<TState>, initialState: TState): ActionReducer<TState> =>
+export let reducerFn = <TState>(types: ReducerMap<TState>, initialState?: TState): ActionReducer<TState> =>
   <T>(state: TState = initialState, action: MyAction<T>): TState => R.pipe(
     R.pathOr(() => trace('reducer defaulted', state), [action.type]),
     (f: PayloadReducer<TState, T>) => f(state, action.payload), // why was this failing to pass payload?

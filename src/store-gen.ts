@@ -51,9 +51,9 @@ let obj/*: NgrxStruct*/ = {
         fn: ['number', `(pl: number) => {
     let blah = pl;
     return {
-      obs: Observable.from([0]),
-      ok: (v) => blah,
-      fail: (e) => 'bar',
+      obs: <any> Observable.from([0]),
+      ok: (res: number) => blah,
+      fail: (e: Error) => 'bar',
     };
   }`],
         // reducer triggered on effect completion, with param type matching `fn.ok` (if available) or `fallback` + `fn.ok`.
@@ -62,7 +62,7 @@ let obj/*: NgrxStruct*/ = {
         fail: ['string', `(state, pl: string) => pl.length`],
       },
       bar: {
-        fn: ['number', `(pl: number) => ({ obs: Observable.from([0]) })`],
+        fn: ['number', `(pl: number) => (<any> { obs: Observable.from([0]) })`],
         ok: ['number', `(state, pl: number) => pl`],
       },
     },

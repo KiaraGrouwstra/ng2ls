@@ -1,5 +1,7 @@
-import { type } from '../js';
-import { Bar } from './models/foo';
+// import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
+import { type } from '../../js';
+import { Bar } from '../foo/models';
 
 const tp = (k: string) => type('[foo] '+k);
 export const Types = {
@@ -21,17 +23,18 @@ export class      bar { type = Types.bar     ; constructor(public payload: numbe
 export class    barOk { type = Types.barOk   ; constructor(public payload: number) {} }
 
 export let actions = { add, subtract, log, logOk, logNg, bar, barOk };
-export type Actions = add | subtract | log | logOk | logNg | bar | barOk;
+export type ActionTypes = add | subtract | log | logOk | logNg | bar | barOk;
 
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.foo = dispatchers(store);', then use the functions to dispatch actions
-export let dispatchers = (store: Observable<Actions>) => {
-  let do = ::store.dispatch;
+export let dispatchers = (store: Store<ActionTypes>) => { // Observable<ActionTypes>
+  let disp = store.dispatch.bind(store);
   return {
-     add     : (pl: number) => do(add     (pl)),
-     subtract: (pl: number) => do(subtract(pl)),
-     log     : (pl: number) => do(log     (pl)),
-     logOk   : (pl: number) => do(logOk   (pl)),
-     logNg   : (pl: string) => do(logNg   (pl)),
-     bar     : (pl: number) => do(bar     (pl)),
-     barOk   : (pl: number) => do(barOk   (pl)),
+     add     : (pl: number) => disp(new add     (pl)),
+     subtract: (pl: number) => disp(new subtract(pl)),
+     log     : (pl: number) => disp(new log     (pl)),
+     logOk   : (pl: number) => disp(new logOk   (pl)),
+     logNg   : (pl: string) => disp(new logNg   (pl)),
+     bar     : (pl: number) => disp(new bar     (pl)),
+     barOk   : (pl: number) => disp(new barOk   (pl)),
+  };
 };

@@ -1,9 +1,9 @@
 import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
-import { combineSelectors } from '../reducers';
+import { Observable } from 'rxjs';
+import { combineSelectors } from '../../reducers/reducers';
 
-import { Bar } from './models/foo';
-import { Types as actions } from '../actions/foo';
+import { Bar } from '../foo/models';
+import { Types as actions } from '../foo/actions';
 let { add, subtract, logOk, logNg, barOk } = actions;
 
 export type State = number;
@@ -20,6 +20,6 @@ export let reducers = {
 
 let id = R.map(R.identity);
 let inc = R.map(R.inc);
-let mult = combineSelectors([id, inc], ([id, inc]) => id * inc);
+let mult = combineSelectors(['id', 'inc'], ([id, inc]) => id * inc);
 
 export let selectors = { id, inc, mult };

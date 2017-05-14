@@ -165,10 +165,10 @@ export class SetAttrs extends ObjDirective {
 
   public _applyChanges(changes: any): void {
     changes.forEachAddedItem((record: KeyValueChangeRecord<string, string>) => {
-      this._setItem(record.key, record.currentValue);
+      this._setItem(record.key, <string> record.currentValue);
     });
     changes.forEachChangedItem((record: KeyValueChangeRecord<string, string>) => {
-      this._setItem(record.key, record.currentValue);
+      this._setItem(record.key, <string> record.currentValue);
     });
     changes.forEachRemovedItem((record: KeyValueChangeRecord<string, string>) => {
       this._setItem(record.key, ''); // null

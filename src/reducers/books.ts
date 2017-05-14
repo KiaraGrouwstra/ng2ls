@@ -1,86 +1,86 @@
-import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
-// import { combineLatest } from 'rxjs/observable/combineLatest';
-// import { Book } from '../models/models';
-export type Book = { id: string };
-import { ActionTypes as bookActions } from '../actions/book';
-import { ActionTypes as collActions } from '../actions/collection';
-import { combineSelectors } from '../reducers';
-let { SEARCH_COMPLETE, LOAD, SELECT } = bookActions;
-let { LOAD_SUCCESS } = collActions;
+// import * as R from 'ramda';
+// import { Observable } from 'rxjs';
+// // import { combineLatest } from 'rxjs/observable/combineLatest';
+// // import { Book } from '../models/models';
+// export type Book = { id: string };
+// import { ActionTypes as bookActions } from '../actions/book';
+// import { ActionTypes as collActions } from '../actions/collection';
+// import { combineSelectors } from '../reducers/reducers';
+// let { SEARCH_COMPLETE, LOAD, SELECT } = bookActions;
+// let { LOAD_SUCCESS } = collActions;
 
-export interface State {
-  ids: string[];
-  entities: { [id: string]: Book };
-  selectedBookId: string | null;
-};
+// export interface State {
+//   ids: string[];
+//   entities: { [id: string]: Book };
+//   selectedBookId: string | null;
+// };
 
-export const initialState: State = {
-  ids: [],
-  entities: {},
-  selectedBookId: null,
-};
+// export const initialState: State = {
+//   ids: [],
+//   entities: {},
+//   selectedBookId: null,
+// };
 
-// T[] -> { [k]: T }, by a certain property as key
-let byProp = (k: string) => R.pipe(R.map(<T>(v: T) => [R.prop(k, v), v]), R.fromPairs);
-// (state, action: book.Actions | collection.Actions): State
+// // T[] -> { [k]: T }, by a certain property as key
+// let byProp = (k: string) => R.pipe(R.map(<T>(v: T) => [R.prop(k, v), v]), R.fromPairs);
+// // (state, action: book.Actions | collection.Actions): State
 
-let mergeBooks = (state: State, books: Book[]) => {
-  const newBooks = books.filter((book: Book) => !state.entities[book.id]);
-  const newBookIds = newBooks.map(R.prop('id'));
-  const newBookEntities = byProp('id')(newBooks);
-  return {
-    ids: [ ...state.ids, ...newBookIds ],
-    entities: R.merge(state.entities, newBookEntities),
-    selectedBookId: state.selectedBookId,
-  };
-}
+// let mergeBooks = (state: State, books: Book[]) => {
+//   const newBooks = books.filter((book: Book) => !state.entities[book.id]);
+//   const newBookIds = newBooks.map(R.prop('id'));
+//   const newBookEntities = byProp('id')(newBooks);
+//   return {
+//     ids: [ ...state.ids, ...newBookIds ],
+//     entities: R.merge(state.entities, newBookEntities),
+//     selectedBookId: state.selectedBookId,
+//   };
+// }
 
-export let reducers = {
-  [SEARCH_COMPLETE]: mergeBooks,
-  [LOAD_SUCCESS]: mergeBooks,
+// export let reducers = {
+//   [SEARCH_COMPLETE]: mergeBooks,
+//   [LOAD_SUCCESS]: mergeBooks,
 
-  [LOAD]: (state: State, book: Book) => state.ids.includes(book.id) ? state : {
-    ids: [ ...state.ids, book.id ],
-    entities: R.merge(state.entities, {
-      [book.id]: book,
-    }),
-    selectedBookId: state.selectedBookId,
-  },
+//   [LOAD]: (state: State, book: Book) => state.ids.includes(book.id) ? state : {
+//     ids: [ ...state.ids, book.id ],
+//     entities: R.merge(state.entities, {
+//       [book.id]: book,
+//     }),
+//     selectedBookId: state.selectedBookId,
+//   },
 
-  [SELECT]: (state: State, selectedBookId: number) => ({
-    ids: state.ids,
-    entities: state.entities,
-    selectedBookId,
-  }),
-}
+//   [SELECT]: (state: State, selectedBookId: number) => ({
+//     ids: state.ids,
+//     entities: state.entities,
+//     selectedBookId,
+//   }),
+// }
 
-let getBookEntities = R.map(R.prop('entities'));
-let getBookIds = R.map(R.prop('ids'));
-let getSelectedBookId = R.map(R.prop('selectedBookId'));
+// let getBookEntities = R.map(R.prop('entities'));
+// let getBookIds = R.map(R.prop('ids'));
+// let getSelectedBookId = R.map(R.prop('selectedBookId'));
 
-export let selectors = {
-  selectedBook: combineSelectors(
-    [getBookEntities, getSelectedBookId],
-    ([books, id]) => books[id]
-  ),
-  allBooks: combineSelectors(
-    [getBookEntities, getBookIds],
-    ([entities, ids]) => ids.map((id: string) => entities[id])
-  ),
-  // // works even without Ramda typings:
-  // selectedBook(state$: Observable<State>) {
-  //   return combineLatest<{ [id: string]: Book }, string>(
-  //     state$.let(getBookEntities),
-  //     state$.let(getSelectedBookId)
-  //   )
-  //   .map(([ entities, selectedBookId ]) => entities[selectedBookId])
-  // },
-  // allBooks(state$: Observable<State>) {
-  //   return combineLatest<{ [id: string]: Book }, string[]>(
-  //     state$.let(getBookEntities),
-  //     state$.let(getBookIds)
-  //   )
-  //   .map(([ entities, ids ]) => ids.map(id => entities[id]));
-  // },
-};
+// export let selectors = {
+//   selectedBook: combineSelectors(
+//     [getBookEntities, getSelectedBookId],
+//     ([books, id]) => books[id]
+//   ),
+//   allBooks: combineSelectors(
+//     [getBookEntities, getBookIds],
+//     ([entities, ids]) => ids.map((id: string) => entities[id])
+//   ),
+//   // // works even without Ramda typings:
+//   // selectedBook(state$: Observable<State>) {
+//   //   return combineLatest<{ [id: string]: Book }, string>(
+//   //     state$.let(getBookEntities),
+//   //     state$.let(getSelectedBookId)
+//   //   )
+//   //   .map(([ entities, selectedBookId ]) => entities[selectedBookId])
+//   // },
+//   // allBooks(state$: Observable<State>) {
+//   //   return combineLatest<{ [id: string]: Book }, string[]>(
+//   //     state$.let(getBookEntities),
+//   //     state$.let(getBookIds)
+//   //   )
+//   //   .map(([ entities, ids ]) => ids.map(id => entities[id]));
+//   // },
+// };

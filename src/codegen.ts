@@ -39,7 +39,7 @@ export function actions(domain, name/*: string*/): string {
     `${k}` // Action
   ).join(' | '); // \n 
   let dispatcherStr = mapLines((tp /*: string */, k) => {
-    return `     ${pad(k)}: (pl: ${tp}) => do(${pad(k)}(pl)),`;
+    return `     ${pad(k)}: (pl: ${tp}) => disp(new ${pad(k)}(pl)),`;
   })(reducers);
 // export let pairs = {\n${pairs}\n};\n
 // import { makeBoth } from '../../actions';
@@ -47,19 +47,20 @@ export function actions(domain, name/*: string*/): string {
 // let { ${names.reducers} } = pairs;\n
 // const tp = '${name}';\n
   return `
-import { type } from '../util';
-import { ${names.models} } from './models/${name}';\n
+import { Store } from '@ngrx/store';
+import { type } from '../../js';
+import { ${names.models} } from '../${name}/models';\n
 const tp = (k: string) => type('[${name}] '+k);
 export const Types = {\n${types}};\n
 ${classes}\n
 export let actions = { ${actionStr} };
-export type Actions = ${type};\n
+export type ActionTypes = ${type};\n
 // usage in component ctor: 'Object.assign(this, dispatchers(store));' or 'this.${name} = dispatchers(store);', then use the functions to dispatch actions
-export let dispatchers = (store: Observable<Actions>) => {
-  let do = ::store.dispatch;
-  return {\n${dispatcherStr}\n};
+export let dispatchers = (store: Store<ActionTypes>) => {
+  let disp = store.dispatch.bind(store);
+  return {\n${dispatcherStr}\n  }\n};
 `.substr(1);
-// export let dispatchers = (store: Observable<Actions>) => R.map(R.pipe(f, ::store.dispatch))(actions);\n
+// export let dispatchers = (store: Store<ActionTypes>) => R.map(R.pipe(f, ::store.dispatch))(actions);\n
 }
 // codeGenAction({ search: 'string', searchOk: 'string' }, 'Foo');
 
@@ -74,16 +75,16 @@ export function effects(domain, name: string): string {
       prettyStringify,
       R.replace(/failAction: '(.+?)'/g, 'failAction: $1'),
     )(opts);
-    return `  @Effect() ${k}$ = makeEffect(${getAction(k)}, ${getAction(`${k}Ok`)}, ${f}, ${optStr});\n`;
+    return `  @Effect() ${k}$ = makeEffect.call(this, { action: ${getAction(k)}, type: Types.${k} }, ${getAction(`${k}Ok`)}, ${f}, ${optStr});\n`;
   })(<{ [k: string]: any /*EffectMeta*/ }> domain.effects);
   return `
 import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { Http } from '@angular/http';
 import { Actions, Effect } from '@ngrx/effects';
-import { actions } from './actions';
-let { ${name} } = actions;
+import { makeEffect } from '../../effects/effects';
+import { actions as ${name}, Types } from '../${name}/actions';
 
 @Injectable()
 export class ${firstUpper(name)}Effects {
@@ -108,7 +109,7 @@ export function reducers(domain/*: DomainMeta*/, name: string): string {
   let actionsName = 'actions'; // `${name}Actions`
   let selectorStr = mapLines((selector, k: string) => {
     let f = !R.is(Array)(selector) ? `R.map(${selector})` : (([deps, fn]) =>
-      `combineSelectors([${deps.join(', ')}], ${fn})`
+      `combineSelectors([${deps.map(k => "'"+k+"'").join(', ')}], ${fn})`
     )(selector);
     return `let ${k} = ${f};`;
   })(selectors);
@@ -118,11 +119,11 @@ export function reducers(domain/*: DomainMeta*/, name: string): string {
   })(reducers);
   return `
 import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
-import { combineSelectors } from '../reducers';
+import { Observable } from 'rxjs';
+import { combineSelectors } from '../../reducers/reducers';
 
-import { ${names.models} } from './models/${name}';
-import { Types as ${actionsName} } from '../actions/${name}';
+import { ${names.models} } from '../${name}/models';
+import { Types as ${actionsName} } from '../${name}/actions';
 let { ${names.reducers} } = ${actionsName};\n
 export ${ isInterface ? `interface State ${state}` : `type State = ${state};`}\n
 export const initialState: State = ${init};\n

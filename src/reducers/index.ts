@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { combineLatest } from 'rxjs/observable/combineLatest';
 import { Action, ActionReducer } from '@ngrx/store';
 // import * as fromRouter from '@ngrx/router-store';

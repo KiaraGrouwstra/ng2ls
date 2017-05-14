@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-// import { Observable } from 'rxjs/Observable';
+// import { Observable } from 'rxjs';
 // import { BehaviorSubject } from 'rxjs/subject/BehaviorSubject';
 import { Observable, BehaviorSubject, Subscription } from 'rxjs';
 import 'rxjs/add/operator/combineLatest';

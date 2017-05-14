@@ -1,5 +1,6 @@
 import * as R from 'ramda';
-import { arr2obj, arr2map, typed, fallback, ng2comp, combine, findIndexSet, editValsOriginal, editValsBoth, editValsLambda, evalExpr, extractIterables, parameterizeStructure, toQuery, fromQuery } from './js';
+import { arr2obj, arr2map, ng2comp, findIndexSet, editValsOriginal, editValsBoth, editValsLambda, evalExpr, extractIterables, parameterizeStructure, toQuery, fromQuery } from './js';
+// , typed, fallback, combine
 
 describe('js', () => {
 
@@ -11,7 +12,7 @@ describe('js', () => {
   })
 
   it('arr2map maps an array to a Map', () => {
-    expect(R.fromPairs(arr2map([1,2,3], y => y * 2))).toEqual({ 1: 2, 2: 4, 3: 6 });
+    expect(R.fromPairs(Array.from(arr2map([1,2,3], y => y * 2).entries()))).toEqual({ 1: 2, 2: 4, 3: 6 });
   })
 
   describe('typed', () => {
@@ -57,50 +58,50 @@ describe('js', () => {
   //   expect().toEqual();
   // })
 
-  it('combine', () => {
-    let cls = class tmp {
-      _a: any;
-      _b: any;
-      c: any;
-      get a() { return this._a; }
-      get b() { return this._b; }
-      set a(x) {
-        this._a = x; this.combInputs();
-      }
-      set b(x) {
-        this._b = x; this.combInputs();
-      }
-      combInputs = () => combine((a: number, b: number) => {
-        this.c = a + b;
-      })(this.a, this.b);
-    }
-    let obj = new cls();
-    obj.a = 1;
-    obj.b = 1;
-    expect(obj.c).toEqual(2);
-  })
+  // it('combine', () => {
+  //   let cls = class tmp {
+  //     _a: any;
+  //     _b: any;
+  //     c: any;
+  //     get a() { return this._a; }
+  //     get b() { return this._b; }
+  //     set a(x) {
+  //       this._a = x; this.combInputs();
+  //     }
+  //     set b(x) {
+  //       this._b = x; this.combInputs();
+  //     }
+  //     combInputs = () => combine((a: number, b: number) => {
+  //       this.c = a + b;
+  //     })(this.a, this.b);
+  //   }
+  //   let obj = new cls();
+  //   obj.a = 1;
+  //   obj.b = 1;
+  //   expect(obj.c).toEqual(2);
+  // })
 
-  it('combine with optional undefined values', () => {
-    let cls = class tmp {
-      _a: any;
-      _b: any;
-      c: any;
-      get a() { return this._a; }
-      get b() { return this._b; }
-      set a(x) {
-        this._a = x; this.combInputs();
-      }
-      set b(x) {
-        this._b = x; this.combInputs();
-      }
-      combInputs = () => combine((a: number, b: number) => {
-        this.c = a + b;
-      }, { b: true })(this.a, this.b);
-    }
-    let obj = new cls();
-    obj.a = 1;
-    expect(obj.c).toEqual(NaN);
-  })
+  // it('combine with optional undefined values', () => {
+  //   let cls = class tmp {
+  //     _a: any;
+  //     _b: any;
+  //     c: any;
+  //     get a() { return this._a; }
+  //     get b() { return this._b; }
+  //     set a(x) {
+  //       this._a = x; this.combInputs();
+  //     }
+  //     set b(x) {
+  //       this._b = x; this.combInputs();
+  //     }
+  //     combInputs = () => combine((a: number, b: number) => {
+  //       this.c = a + b;
+  //     }, { b: true })(this.a, this.b);
+  //   }
+  //   let obj = new cls();
+  //   obj.a = 1;
+  //   expect(obj.c).toEqual(NaN);
+  // })
 
   it('findIndexSet', () => {
     expect(findIndexSet('b', new Set(['a','b','c']))).toEqual(1);

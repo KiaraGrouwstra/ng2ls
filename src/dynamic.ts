@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import * as L from 'partial.lenses';
 import { Observable } from 'rxjs';
 import { Injectable, Type } from '@angular/core';
-import { Http } from '@angular/http';
+// import { Http } from '@angular/http';
 import { Store, Action, combineReducers } from '@ngrx/store';
 import { Actions, Effect } from '@ngrx/effects';
 
@@ -13,7 +13,7 @@ import { writeFile } from './node-utils';
 import { lookup, arr2obj, firstUpper } from './js';
 import { Obj } from './models/models';
 import { make, actionTp } from './actions/actions';
-import { combineSelectors, Reducer } from './reducers/reducers';
+import { combineSelectors, Reducer, reducerFn } from './reducers/reducers';
 
 export interface DomainBasic<T> {
   // local id paths, used as an index
@@ -73,8 +73,8 @@ export function getEffClass(effects, actions, k): Type<DomainEffectBase> {
   class DomainEffect implements DomainEffectBase {
 
     constructor(
-      private http: Http,
-      private actions$: Actions,  
+      // private http: Http,
+      private actions$: Actions,
     ) {
       R.forEachObjIndexed((eff: any, ek: string) => {
         const getAction = (kk: string) => `${k}.${kk}`;
@@ -158,9 +158,9 @@ export let genNgrx: (o: Obj<NgrxDomain<any>>) => Obj<NgrxInfo> = R.mapObjIndexed
   };
 });
 
-export let mergeNgrx = (o: { [k: string]: { actions, reducers, selectors, effects, dispatchers, initialState } }) => <{
+export let mergeNgrx = (o: { [k: string]: NgrxInfo }) => <{
   actions: Obj<Obj<Type<Action>>>;
-  reducers: Obj<Reducer<any>>;
+  reducers: Reducer<any>;
   selectors: Obj<Obj<(state$: Observable<any>) => Observable<any>>>;
   effects: Obj<Type</*Effect*/any>>;
   dispatchers: (store: Store<any>) => Obj<Obj<(pl: any) => void>>;
@@ -169,7 +169,7 @@ export let mergeNgrx = (o: { [k: string]: { actions, reducers, selectors, effect
   arr2obj((k: string) => R.pluck(k, o)),
   R.evolve({
     dispatchers: (dispatchers) => (store: Store<any>) => R.map((fn: Function) => fn(store), dispatchers),
-    reducers: R.map(combineReducers),
+    reducers: R.pipe(R.map(reducerFn), combineReducers),
   }),
 )(
   ['actions', 'reducers', 'selectors', 'effects', 'dispatchers', 'initialState']

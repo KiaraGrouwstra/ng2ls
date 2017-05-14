@@ -1,8 +1,8 @@
 import * as R from 'ramda';
 import { TestBed, tick } from '@angular/core/testing';
-import { dispatchEvent } from '@angular/platform-browser/testing/browser_util';
+// import { dispatchEvent } from '@angular/platform-browser/testing/browser_util';
 import { asyncTest, testFn, CompTestMeta } from './test';
-import { SetAttrs, DynamicAttrs, DynamicStyle, DynamicClass, AssignLocal, AppliesDirective, AppliesExprDirective } from './directives';
+import { SetAttrs, DynamicAttrs, DynamicStyle, DynamicClass, AppliesDirective, AppliesExprDirective } from './directives';
 import { ng2comp, print } from './js';
 import { Component, Input, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
@@ -32,7 +32,7 @@ describe('directives', () => {
 
   let component = {
     selector: 'test-cmp',
-    directives: [DynamicAttrs, SetAttrs, AssignLocal, DynamicStyle, DynamicClass, AppliesDirective, AppliesExprDirective],
+    directives: [DynamicAttrs, SetAttrs, DynamicStyle, DynamicClass, AppliesDirective, AppliesExprDirective],
     template: '',
   };
 
@@ -66,11 +66,11 @@ describe('directives', () => {
   describe('AppliesDirective', () => {
 
     it('sets the hidden property', test(tmplt(`<div [applies]="true"></div>`), ({ comp, el, fixture }: TestPars) => {
-      expect(el.hidden).toEqual(false);
+      expect(el['hidden']).toEqual(false);
     }));
 
     it('can deal with non-values', test(tmplt(`<div [applies]="false"></div>`), ({ comp, el, fixture }: TestPars) => {
-      expect(el.hidden).toEqual(true);
+      expect(el['hidden']).toEqual(true);
     }));
 
   })
@@ -78,11 +78,11 @@ describe('directives', () => {
   describe('AppliesExprDirective', () => {
 
     it('sets the hidden property', test(tmplt(`<div [appliesExpr]="condExpr"></div>`), ({ comp, el, fixture }: TestPars) => {
-      expect(el.hidden).toEqual(false);
+      expect(el['hidden']).toEqual(false);
     }));
 
     it('can deal with non-values', test(tmplt(`<div [appliesExpr]="null"></div>`), ({ comp, el, fixture }: TestPars) => {
-      expect(el.hidden).toEqual(false);
+      expect(el['hidden']).toEqual(false);
     }));
 
   })
@@ -90,7 +90,7 @@ describe('directives', () => {
   describe('DynamicStyle', () => {
 
     it('sets styles', test(tmplt(`<div [dynamicStyle]="{ color: baz }"></div>`), ({ comp, el, fixture }: TestPars) => {
-      expect(el.style.color).toEqual('red');
+      expect(el['style'].color).toEqual('red');
     }));
 
   })

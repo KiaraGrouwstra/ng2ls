@@ -16,7 +16,7 @@
 //- reusable
 
 mixin variable(name, expr)
-  template(ngFor [ngForOf]=`[${expr}]`)&attributes({[`let-${name}`]: true})
+  ng-template(ngFor [ngForOf]=`[${expr}]`)&attributes({[`let-${name}`]: true})
     block
 
 - const awaiter = (expr) => `(${expr} && (${expr} | async))`

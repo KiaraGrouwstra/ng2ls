@@ -2,7 +2,7 @@ declare var require;
 
 import * as R from 'ramda';
 // let $ = require('jquery');
-import { Component, OpaqueToken } from '@angular/core';
+import { Component, InjectionToken } from '@angular/core';
 import { ValidatorFn, FormBuilder, FormControl, FormArray, FormGroup, AbstractControl } from '@angular/forms';
 // import { Maybe } from 'sanctuary';
 // let CryptoJS = require('crypto-js');
@@ -121,14 +121,14 @@ function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
 
 // create a Component, decorating the class with the provided metadata
 // export let FooComp = ng2comp({ component: {}, parameters: [], decorators: {}, class: class FooComp {} })
-export function ng2comp<TComp extends Type<any>>(o: { component?: Component, parameters?: Array<OpaqueToken | never /*?*/>, decorators?: Obj<ClassDecorator>, class: TComp }): TComp {
+export function ng2comp<TComp extends Type<any>>(o: { component?: Component, parameters?: Array<InjectionToken | never /*?*/>, decorators?: Obj<ClassDecorator>, class: TComp }): TComp {
   let { component = {}, parameters = [], decorators = {}, class: cls } = o;
   R.keys(decorators).forEach((k: string) => {
     (<any>Reflect).decorate([decorators[k]], cls.prototype, k);
   });
   return Object.assign(cls, {
     annotations: [new Component(component)],
-    parameters: parameters.map(x => x instanceof OpaqueToken ? x : [x]),
+    parameters: parameters.map(x => x instanceof InjectionToken ? x : [x]),
   });
 };
 

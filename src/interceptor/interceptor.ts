@@ -1,4 +1,4 @@
-import { NgModule, Type, OpaqueToken } from '@angular/core';
+import { NgModule, Type } from '@angular/core';
 import { Action, Dispatcher, Store } from '@ngrx/store';
 import { Subject, Observable } from 'rxjs';
 import 'rxjs/operator/withLatestFrom';

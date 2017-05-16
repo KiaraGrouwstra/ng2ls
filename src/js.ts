@@ -121,7 +121,7 @@ function tryLog<T>(fn: Fn<T>): Fn<T|undefined> {
 
 // create a Component, decorating the class with the provided metadata
 // export let FooComp = ng2comp({ component: {}, parameters: [], decorators: {}, class: class FooComp {} })
-export function ng2comp<TComp extends Type<any>>(o: { component?: Component, parameters?: Array<InjectionToken | never /*?*/>, decorators?: Obj<ClassDecorator>, class: TComp }): TComp {
+export function ng2comp<TComp extends Type<any>>(o: { component?: Component, parameters?: Array<InjectionToken<any> | never /*?*/>, decorators?: Obj<ClassDecorator>, class: TComp }): TComp {
   let { component = {}, parameters = [], decorators = {}, class: cls } = o;
   R.keys(decorators).forEach((k: string) => {
     (<any>Reflect).decorate([decorators[k]], cls.prototype, k);

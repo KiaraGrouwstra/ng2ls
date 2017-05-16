@@ -1,6 +1,6 @@
 {
   "name": "ng2ls",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "description": "Useful tools for Angular 2 and ngrx",
   "main": "bundles/ng2ls.umd.js",
   "module": "index.js",

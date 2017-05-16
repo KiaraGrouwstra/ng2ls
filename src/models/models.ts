@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import { Type } from '@angular/core';
 export { Type } from '@angular/core';
 export { Action } from '@ngrx/store';
 import { State } from '../reducers';
@@ -23,7 +24,7 @@ export type CombinedSelector = [string[], (...args: any[]) => any];
 
 export interface NgrxDomain<TState> {
   // object of classes for Dependency Injection in effect classes (key -> property name)
-  di: Obj<Type<any>>;
+  di?: Obj<Type<any>>;
   // initial state value
   init?: TState;
   reducers?: Obj<Reducer<any>>;

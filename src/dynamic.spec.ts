@@ -8,7 +8,8 @@ import { Obj, NgrxDomain } from './models/models';
 import { mapSyncActions, actionTp } from './actions/actions';
 import { combineSelectors, reducerFn } from './reducers/reducers';
 import { makeEffect } from './effects/effects';
-import { genNgrx } from './dynamic';
+import { genNgrx, NgrxInfo } from './dynamic';
+export { NgrxInfo };
 
 type Reducer<State, T> = (payload: T) => (state: State) => State;
 
@@ -17,7 +18,7 @@ interface Bar {
   y: string;
 }
 
-let foo: NgrxDomain = {
+let foo: NgrxDomain<number> = {
   init: 0, // initial state value
   // reducer functions, with payload type explicit for now
   reducers: {
@@ -62,9 +63,9 @@ let foo: NgrxDomain = {
         };
       },
       // reducer triggered on effect completion, with param type matching `fn.ok` (if available) or `fallback` + `fn.ok`.
-      ok: (pl: number, state) => pl,
+      ok: (pl: number) => () => pl,
       // reducer triggered on effect failure, define either this or `fallback`. param type matches `fn.fail` if available, otherwise `Error`.
-      fail: (pl: string, state) => pl.length,
+      fail: (pl: string) => () => pl.length,
     },
   },
 };

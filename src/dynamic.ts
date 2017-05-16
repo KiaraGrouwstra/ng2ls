@@ -70,17 +70,17 @@ export let domainMeta = R.mapObjIndexed((struct, k) => R.pipe(
 export class DomainEffectBase {}
 export function getEffClass(effects, actions, k: string, ctorParamObj: Obj<Type<any>>): Type<DomainEffectBase> {
   let [keys, classes] = R.pipe(R.toPairs, R.transpose)(ctorParamObj);
-  @Injectable()
-  class DomainEffect implements DomainEffectBase {
+  let DomainEffect = class DomainEffect implements DomainEffectBase {
 
     constructor(
       // private http: Http,
       private actions$: Actions,
     ) {
       const numArgs = 1;
-      R.forEachObjIndexed((name: string, i: number) => {
-        this[name] = arguments[numArgs + i];
-      })(ctorParamPairs);
+      let args = arguments;
+      R.addIndex(R.forEach)((name: string, i: number) => {
+        this[name] = args[numArgs + i];
+      })(keys);
       R.forEachObjIndexed((eff: any, ek: string) => {
         const getAction = (kk: string) => `${k}.${kk}`;
         let { init, debounce, read, fallback, fail, ok, fn } = eff;
@@ -95,7 +95,9 @@ export function getEffClass(effects, actions, k: string, ctorParamObj: Obj<Type<
   };
 
   let paramTypes = (<any> Reflect).getMetadata("design:paramtypes", DomainEffect);
+  console.log('paramTypes', paramTypes);
   DomainEffect = (<any> Reflect).decorate([
+      Injectable(),
       (<any> Reflect).metadata("design:paramtypes", [...paramTypes, ...classes]),
   ], DomainEffect);
 
@@ -142,7 +144,7 @@ export interface NgrxInfo {
 export let genNgrx: (o: Obj<NgrxDomain<any>>) => Obj<NgrxInfo> = R.mapObjIndexed((domain: NgrxDomain<any>, k: string) => {
   let actions: Obj<Type<Action>> = make.actions(k, <string[]> [
     ...Object.keys(domain.reducers),
-    ...R.pipe(R.keys, R.chain(x => [x, `${x}Ok`, `${x}Fail`]))(domain.effects),
+    ...R.pipe(R.keys, R.chain(x => [x, `${x}Ok`, `${x}Fail`]))(domain.effects || {}),
   ]);
   let effReducers = R.mapObjIndexed((eff, k) =>
     R.pipe(
@@ -161,8 +163,8 @@ export let genNgrx: (o: Obj<NgrxDomain<any>>) => Obj<NgrxInfo> = R.mapObjIndexed
         (([deps, fn]) => combineSelectors(deps, fn))(selector) :
         /*R.map*/((fn: (v: any) => any) => (obs: Observable<any>) => obs.map(fn))(selector)
       )
-    )(domain.selectors),
-    effects: getEffClass(domain.effects, actions, k, domain.di),
+    )(domain.selectors || {}),
+    effects: getEffClass(domain.effects || {}, actions, k, domain.di || {}),
     dispatchers: (store: Store<any>) => R.map((action: Type<Action>) => (pl) => store.dispatch(new action(pl)), actions),
     initialState: domain.init,
   };

@@ -16,8 +16,8 @@ export type Reducer<T> = (pl: T) => PointFree;
 
 // pick the right reducer by action type, or default to the current state
 export let reducerFn = <TState>(types: ReducerMap<TState>, initialState?: TState): ActionReducer<TState> =>
-  <T>(state: TState = initialState, action: MyAction<T>): TState => R.pipe(
-    R.pathOr(() => trace('reducer defaulted', state), [action.type]),
+  <T>(state: TState = <TState> initialState, action: MyAction<T>): TState => R.pipe(
+    R.pathOr(() => trace(`reducer type defaulted: ${action.type}`, state), [action.type]),
     (f: PayloadReducer<TState, T>) => f(state, action.payload), // why was this failing to pass payload?
  )(types);
 
@@ -37,14 +37,14 @@ export type ReducerStructMap = {
 };
 
 // make a reducer with some optimizations based on what reducer parameters are actually used
-export let reducerStructFn = <T>(struct: ReducerStructMap, initialState: Obj<State>): ActionReducer<Obj<T>> => {
+export let reducerStructFn = /*<T>*/(struct: ReducerStructMap, initialState: any): ActionReducer<Obj</*T*/any>> => {
   // let { fixed = {}, set = {}, update = {}, edit = {}, misc = {} } = struct;
   let fixed = struct.fixed || {};
   let set = struct.set || {};
   let update = struct.update || {};
   let edit = struct.edit || {};
   let misc = struct.misc || {};
-  let reducer = <Obj<PayloadReducer<T, any>>> R.mergeAll([
+  let reducer = <Obj<PayloadReducer</*T*/any, any>>> R.mergeAll([
     R.map((v: any) => (state: State, payload: any) => v)(fixed),
     R.map((fn: (payload: any) => State) => (state: State, payload: any) => fn(payload))(set),
     R.map((fn: PointFree) => (state: State, payload: any) => fn(state))(update),

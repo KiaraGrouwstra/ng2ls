@@ -36,7 +36,7 @@ describe('directives', () => {
     template: '',
   };
 
-  let tmplt = (str: string) => ({ component: R.assoc('template', str)(component), class: TestComponent, parameters: [ChangeDetectorRef] });
+  let tmplt = (str: string) => ({ component: R.assoc('template', str, component), class: TestComponent, parameters: [ChangeDetectorRef] });
 
   describe('SetAttrs', () => {
 

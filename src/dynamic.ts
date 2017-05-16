@@ -94,11 +94,15 @@ export function getEffClass(effects, actions, k: string, ctorParamObj: Obj<Type<
     
   };
 
-  let paramTypes = (<any> Reflect).getMetadata("design:paramtypes", DomainEffect);
-  console.log('paramTypes', paramTypes);
+  // let paramTypes = (<any> Reflect).getMetadata("design:paramtypes", DomainEffect);
+  // console.log('paramTypes', paramTypes);
   DomainEffect = (<any> Reflect).decorate([
       Injectable(),
-      (<any> Reflect).metadata("design:paramtypes", [...paramTypes, ...classes]),
+      (<any> Reflect).metadata("design:paramtypes", [
+        // ...paramTypes,
+        Actions,
+        ...classes,
+        ]),
   ], DomainEffect);
 
   R.forEachObjIndexed((eff: any, ek: string) => {

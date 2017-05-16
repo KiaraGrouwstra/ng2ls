@@ -69,10 +69,10 @@ export class ApiService<T> {
     )
   )
 
-  api: T = pathProxy((segments: Array<string|number>, pars: { [k: string]: string }, opts: Object) => {
+  api: T = pathProxy((segments: Array<string|number>, pars?: { [k: string]: string }, opts?: Object) => {
     let [urlPath, verb]: [Array<string|number>, string] = [R.init(segments), <string>R.last(segments)];
     let dynamicSegments = R.pipe(R.filter(R.test(/^$/)), R.map(R.tail))(urlPath);
-    let [pathPars, miscPars] = R.addIndex(R.partition)((v, k) => R.contains(k, <string[]>dynamicSegments))(pars);
+    let [pathPars, miscPars] = R.addIndex(R.partition)((v, k) => R.contains(k, <string[]>dynamicSegments))(pars || {});
     let mappedPath = urlPath.map(R.when(R.test(/^$/), lookup(pathPars)));
     return this.req[verb](mappedPath.join('/'), miscPars, opts);
   });

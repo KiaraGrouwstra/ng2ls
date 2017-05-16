@@ -86,7 +86,8 @@ export function getEffClass(effects, actions, k: string, ctorParamObj: Obj<Type<
         let { init, debounce, read, fallback, fail, ok, fn } = eff;
         let failAction = fail && getAction(`${k}Fail`);
         let opts = { init, debounce, read, fallback, failAction };
-        let fn2 = makeEffect.call(this, <any> { type: actionTp(k, ek), action: actions[ek] }, <any> actions[`${ek}Ok`], eff.fn.bind(this), <any> opts);
+        let fn2 = makeEffect.call(this, <any> { type: actionTp(k, ek), action: actions[ek] },
+            <any> actions[`${ek}Ok`], eff.fn.bind(this), <any> opts);
         let key = getAction(ek) + '$';
         this[key] = fn2;
       })(effects||{});

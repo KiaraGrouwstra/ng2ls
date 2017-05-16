@@ -22,7 +22,10 @@ export type CombinedSelector = [string[], (...args: any[]) => any];
 // `;
 
 export interface NgrxDomain<TState> {
-  init?: TState; // initial state value
+  // object of classes for Dependency Injection in effect classes (key -> property name)
+  di: Obj<Type<any>>;
+  // initial state value
+  init?: TState;
   reducers?: Obj<Reducer<any>>;
   // selector functions from state$, probably using `obs.select`, `R.map(R.prop(k))` or `combineSelectors`
   // selectors combining previous selectors, supplied as tuple of [deps, fn]
